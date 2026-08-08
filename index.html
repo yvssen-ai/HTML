@@ -1,0 +1,1761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>YS STORE — Future-Grade Tech Gadgets</title>
+<meta name="description" content="YS STORE — a curated arsenal of future-grade tech gadgets. Audio, wearables, drones, and desk hardware engineered for people who move fast." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230a0a12'/><text y='68' x='50' text-anchor='middle' font-size='52' font-family='Arial' font-weight='bold' fill='%2300e5ff'>YS</text></svg>" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   YS STORE — design tokens
+   ============================================================ */
+:root{
+  --bg:#05060a;
+  --bg-2:#0a0c14;
+  --panel:#0e1119;
+  --line:rgba(255,255,255,.09);
+  --line-strong:rgba(255,255,255,.18);
+  --ink:#f2f5ff;
+  --ink-dim:#98a0b8;
+  --ink-faint:#5e657b;
+  --cyan:#00e5ff;
+  --violet:#8b5cf6;
+  --lime:#c8ff2f;
+  --pink:#ff3d81;
+  --grad:linear-gradient(120deg,var(--cyan),var(--violet) 55%,var(--pink));
+  --font-d:"Syne",system-ui,sans-serif;
+  --font-b:"Space Grotesk",system-ui,sans-serif;
+  --font-m:"JetBrains Mono",ui-monospace,monospace;
+  --ease:cubic-bezier(.19,1,.22,1);
+  --max:1320px;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:auto;-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--font-b);
+  font-size:16px;
+  line-height:1.6;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+body.is-locked{overflow:hidden;height:100vh}
+img,svg{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+::selection{background:var(--cyan);color:#04060b}
+
+/* scrollbar */
+::-webkit-scrollbar{width:10px}
+::-webkit-scrollbar-track{background:#05060a}
+::-webkit-scrollbar-thumb{background:#1e2434;border-radius:20px;border:2px solid #05060a}
+::-webkit-scrollbar-thumb:hover{background:#2c344a}
+
+/* ============================================================
+   Utility / layout
+   ============================================================ */
+.wrap{width:min(100% - 44px,var(--max));margin-inline:auto}
+.eyebrow{
+  font-family:var(--font-m);font-size:11px;letter-spacing:.32em;text-transform:uppercase;
+  color:var(--cyan);display:inline-flex;align-items:center;gap:10px;
+}
+.eyebrow::before{content:"";width:26px;height:1px;background:var(--cyan);opacity:.7}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:40px;flex-wrap:wrap;margin-bottom:64px}
+.sec-title{
+  font-family:var(--font-d);font-weight:800;line-height:.94;letter-spacing:-.03em;
+  font-size:clamp(2.2rem,5.4vw,4.5rem);text-transform:uppercase;
+}
+.grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+/* once JS paints per-character colors, drop the background-clip technique so the
+   gradient survives the transforms GSAP puts on each split character */
+.grad.painted,.l2.painted{
+  background:none;-webkit-background-clip:border-box;background-clip:border-box;color:inherit;
+}
+.sec-sub{color:var(--ink-dim);max-width:44ch;font-size:clamp(.95rem,1.3vw,1.05rem)}
+.mono{font-family:var(--font-m);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint)}
+section{position:relative}
+
+/* char split primitives */
+.word{display:inline-block;white-space:nowrap}
+.char-mask{display:inline-block;overflow:hidden;padding-bottom:.14em;margin-bottom:-.14em;vertical-align:top}
+.char{display:inline-block;will-change:transform}
+.line-mask{display:block;overflow:hidden;padding-bottom:.1em;margin-bottom:-.1em}
+
+/* ============================================================
+   Preloader
+   ============================================================ */
+#loader{
+  position:fixed;inset:0;z-index:9999;background:#05060a;
+  display:grid;place-items:center;
+}
+#loader .l-inner{width:min(88vw,620px);text-align:center}
+#loader .l-mark{
+  font-family:var(--font-d);font-weight:800;font-size:clamp(3rem,11vw,7rem);
+  letter-spacing:-.04em;line-height:1;display:flex;justify-content:center;gap:.02em;
+}
+#loader .l-mark span{display:inline-block;transform:translateY(110%);opacity:0}
+#loader .l-tag{margin-top:14px;font-family:var(--font-m);font-size:11px;letter-spacing:.4em;color:var(--ink-faint);text-transform:uppercase;opacity:0}
+#loader .l-bar{margin-top:38px;height:2px;width:100%;background:rgba(255,255,255,.09);position:relative;overflow:hidden}
+#loader .l-bar i{position:absolute;inset:0;background:var(--grad);transform:scaleX(0);transform-origin:0 50%}
+#loader .l-num{margin-top:14px;font-family:var(--font-m);font-size:12px;color:var(--ink-dim);display:flex;justify-content:space-between}
+.loader-curtain{position:fixed;left:0;top:0;width:100%;height:100%;background:#0a0c14;z-index:9998;transform:translateY(100%)}
+
+/* ============================================================
+   Cursor
+   ============================================================ */
+.cursor-dot,.cursor-ring{
+  position:fixed;top:0;left:0;z-index:9000;pointer-events:none;border-radius:50%;
+  mix-blend-mode:difference;
+}
+.cursor-dot{width:6px;height:6px;background:#fff;margin:-3px 0 0 -3px}
+.cursor-ring{width:38px;height:38px;border:1px solid rgba(255,255,255,.55);margin:-19px 0 0 -19px}
+.cursor-ring .c-label{
+  position:absolute;inset:0;display:grid;place-items:center;font-family:var(--font-m);
+  font-size:9px;letter-spacing:.1em;text-transform:uppercase;opacity:0;color:#fff;
+}
+@media (hover:none),(pointer:coarse){.cursor-dot,.cursor-ring{display:none}}
+
+/* ============================================================
+   Background FX
+   ============================================================ */
+#fx-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.55}
+.grid-bg{
+  position:fixed;inset:-10%;z-index:0;pointer-events:none;opacity:.32;
+  background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+  background-size:70px 70px;
+  mask-image:radial-gradient(ellipse at 50% 30%,#000 10%,transparent 72%);
+  -webkit-mask-image:radial-gradient(ellipse at 50% 30%,#000 10%,transparent 72%);
+}
+.aurora{position:fixed;z-index:0;pointer-events:none;filter:blur(90px);opacity:.5;border-radius:50%}
+.aurora.a1{width:52vw;height:52vw;background:radial-gradient(circle,rgba(0,229,255,.42),transparent 62%);top:-16vw;left:-10vw}
+.aurora.a2{width:46vw;height:46vw;background:radial-gradient(circle,rgba(139,92,246,.42),transparent 62%);bottom:-14vw;right:-8vw}
+.aurora.a3{width:34vw;height:34vw;background:radial-gradient(circle,rgba(255,61,129,.3),transparent 62%);top:44%;left:38%}
+.noise{
+  position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.045;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+main,header,footer{position:relative;z-index:2}
+
+/* ============================================================
+   Nav
+   ============================================================ */
+.nav{
+  position:fixed;top:0;left:0;width:100%;z-index:800;padding:22px 0;
+  transition:padding .45s var(--ease),background .45s var(--ease),backdrop-filter .45s var(--ease),border-color .45s var(--ease);
+  border-bottom:1px solid transparent;
+}
+.nav.stuck{
+  padding:12px 0;background:rgba(5,6,10,.72);backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);border-bottom-color:var(--line);
+}
+.nav-in{display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand{display:flex;align-items:center;gap:11px;font-family:var(--font-d);font-weight:800;letter-spacing:-.02em;font-size:1.18rem}
+.brand-mark{
+  width:34px;height:34px;border-radius:10px;background:var(--grad);display:grid;place-items:center;
+  font-size:13px;color:#04060b;font-weight:800;box-shadow:0 0 22px rgba(0,229,255,.35);
+}
+.brand em{font-style:normal;color:var(--cyan)}
+.nav-links{display:flex;gap:34px;align-items:center}
+.nav-links a{
+  font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-dim);
+  position:relative;padding:4px 0;transition:color .3s ease;
+}
+.nav-links a::after{
+  content:"";position:absolute;left:0;bottom:0;height:1px;width:100%;background:var(--cyan);
+  transform:scaleX(0);transform-origin:100% 50%;transition:transform .5s var(--ease);
+}
+.nav-links a:hover{color:var(--ink)}
+.nav-links a:hover::after{transform:scaleX(1);transform-origin:0 50%}
+.nav-cta{display:flex;align-items:center;gap:14px}
+.cart-btn{
+  display:flex;align-items:center;gap:9px;border:1px solid var(--line-strong);border-radius:100px;
+  padding:9px 17px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+  transition:border-color .35s ease,background .35s ease;
+}
+.cart-btn:hover{border-color:var(--cyan);background:rgba(0,229,255,.08)}
+.cart-count{background:var(--cyan);color:#04060b;border-radius:100px;padding:1px 7px;font-size:11px;font-weight:700}
+.burger{display:none;width:42px;height:42px;border:1px solid var(--line-strong);border-radius:12px;place-items:center;gap:5px;flex-direction:column}
+.burger i{display:block;width:16px;height:1.5px;background:var(--ink)}
+@media(max-width:900px){
+  .nav-links{display:none}
+  .burger{display:flex;justify-content:center}
+  .cart-btn span.lbl{display:none}
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn{
+  position:relative;display:inline-flex;align-items:center;gap:12px;
+  padding:17px 34px;border-radius:100px;font-size:13px;font-weight:600;white-space:nowrap;
+  letter-spacing:.12em;text-transform:uppercase;overflow:hidden;isolation:isolate;
+  border:1px solid transparent;will-change:transform;
+}
+.btn-primary{background:var(--grad);color:#04060b;box-shadow:0 14px 44px -14px rgba(0,229,255,.6)}
+.btn-primary::after{
+  content:"";position:absolute;inset:0;z-index:-1;background:#f2f5ff;
+  transform:translateY(101%);transition:transform .55s var(--ease);
+}
+.btn-primary:hover::after{transform:translateY(0)}
+.btn-ghost{border-color:var(--line-strong);color:var(--ink)}
+.btn-ghost::after{
+  content:"";position:absolute;inset:0;z-index:-1;background:var(--ink);
+  transform:scaleY(0);transform-origin:50% 100%;transition:transform .5s var(--ease);
+}
+.btn-ghost:hover{color:#04060b;border-color:var(--ink)}
+.btn-ghost:hover::after{transform:scaleY(1)}
+.btn .arw{transition:transform .45s var(--ease)}
+.btn:hover .arw{transform:translateX(5px)}
+
+/* ============================================================
+   Hero
+   ============================================================ */
+.hero{min-height:100svh;display:flex;align-items:center;padding:150px 0 90px;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.06fr .94fr;gap:52px;align-items:center}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:10px;border:1px solid var(--line-strong);
+  border-radius:100px;padding:7px 16px 7px 8px;font-family:var(--font-m);font-size:11px;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:30px;
+  background:rgba(255,255,255,.03);
+}
+.hero-badge b{background:var(--grad);color:#04060b;border-radius:100px;padding:3px 10px;font-size:10px;font-weight:700}
+.hero h1{
+  font-family:var(--font-d);font-weight:800;text-transform:uppercase;letter-spacing:-.035em;
+  line-height:.86;font-size:clamp(2.6rem,6.4vw,5.9rem);
+}
+.hero h1 .l2{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero h1 .l3{
+  color:transparent;-webkit-text-stroke:1.4px rgba(242,245,255,.5);
+}
+.hero-copy{margin-top:32px;color:var(--ink-dim);max-width:46ch;font-size:clamp(1rem,1.4vw,1.12rem)}
+.hero-actions{margin-top:44px;display:flex;gap:16px;flex-wrap:wrap}
+.hero-stats{
+  margin-top:64px;display:flex;gap:46px;flex-wrap:wrap;padding-top:30px;border-top:1px solid var(--line);
+}
+.hstat b{display:block;font-family:var(--font-d);font-size:clamp(1.6rem,3vw,2.3rem);font-weight:800;letter-spacing:-.02em}
+.hstat span{font-family:var(--font-m);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint)}
+
+.hero-visual{position:relative;height:min(72vh,660px)}
+.orb{
+  position:absolute;left:50%;top:50%;width:min(38vw,430px);aspect-ratio:1;transform:translate(-50%,-50%);
+  border-radius:50%;background:conic-gradient(from 0deg,rgba(0,229,255,.3),rgba(139,92,246,.28),rgba(255,61,129,.24),rgba(0,229,255,.3));
+  filter:blur(46px);opacity:.85;
+}
+.ring{
+  position:absolute;left:50%;top:50%;translate:-50% -50%;border-radius:50%;
+  border:1px solid rgba(255,255,255,.11);
+}
+.ring.r1{width:min(46vw,500px);aspect-ratio:1}
+.ring.r2{width:min(34vw,380px);aspect-ratio:1;border-style:dashed;border-color:rgba(0,229,255,.22)}
+.ring.r3{width:min(58vw,620px);aspect-ratio:1;border-color:rgba(255,255,255,.06)}
+.ring i{
+  position:absolute;top:-4px;left:50%;width:8px;height:8px;margin-left:-4px;border-radius:50%;
+  background:var(--cyan);box-shadow:0 0 16px var(--cyan);
+}
+.float-card{
+  position:absolute;padding:14px 16px;border-radius:16px;border:1px solid var(--line-strong);
+  background:rgba(14,17,25,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  display:flex;align-items:center;gap:12px;box-shadow:0 22px 60px -26px rgba(0,0,0,.9);
+}
+.float-card .fc-ico{width:38px;height:38px;border-radius:11px;background:rgba(0,229,255,.12);display:grid;place-items:center;color:var(--cyan)}
+.float-card b{display:block;font-size:13px;letter-spacing:-.01em}
+.float-card span{font-family:var(--font-m);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint)}
+.fc-1{top:4%;left:-8%}
+.fc-2{bottom:17%;right:-7%}
+.fc-3{bottom:34%;left:-12%}
+.hero-device{position:absolute;left:50%;top:48%;translate:-50% -50%;width:min(40vw,400px)}
+.scroll-cue{
+  position:absolute;right:30px;bottom:26px;display:flex;flex-direction:column;
+  align-items:center;gap:10px;font-family:var(--font-m);font-size:10px;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--ink-faint);
+}
+.scroll-cue .track{width:1px;height:56px;background:rgba(255,255,255,.14);position:relative;overflow:hidden}
+.scroll-cue .track i{position:absolute;top:0;left:0;width:100%;height:40%;background:var(--cyan)}
+@media(max-width:980px){
+  .hero{padding:118px 0 70px}
+  .hero-grid{grid-template-columns:1fr;gap:34px}
+  .hero-visual{height:min(46vh,360px)}
+  .hero-device{width:min(56vw,250px)}
+  .hero-actions{margin-top:32px}
+  .hero-stats{margin-top:42px;gap:30px}
+  .float-card{padding:11px 13px;border-radius:14px}
+  .float-card .fc-ico{width:32px;height:32px}
+  .float-card b{font-size:12px}
+  .fc-1{top:0;left:0}
+  .fc-2{bottom:2%;right:0}
+  .fc-3{display:none}
+  .scroll-cue{display:none}
+}
+
+/* ============================================================
+   Marquee
+   ============================================================ */
+.marquee{
+  border-block:1px solid var(--line);padding:26px 0;overflow:hidden;
+  background:linear-gradient(90deg,rgba(0,229,255,.05),rgba(139,92,246,.05));
+}
+.mq-track{display:flex;gap:56px;width:max-content;will-change:transform}
+.mq-item{
+  display:flex;align-items:center;gap:56px;font-family:var(--font-d);font-weight:700;
+  text-transform:uppercase;letter-spacing:-.01em;font-size:clamp(1.2rem,2.6vw,2rem);white-space:nowrap;
+}
+.mq-item .dot{width:9px;height:9px;border-radius:50%;background:var(--cyan);flex:none}
+.mq-item .out{color:transparent;-webkit-text-stroke:1px rgba(242,245,255,.42)}
+
+/* ============================================================
+   Sections shell
+   ============================================================ */
+.sec{padding:clamp(90px,13vw,170px) 0}
+
+/* Categories */
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.cat{
+  position:relative;padding:30px 26px 26px;border:1px solid var(--line);border-radius:20px;
+  background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.01));
+  overflow:hidden;min-height:230px;display:flex;flex-direction:column;justify-content:space-between;
+  transition:border-color .45s ease,transform .5s var(--ease);
+}
+.cat::before{
+  content:"";position:absolute;inset:0;opacity:0;transition:opacity .5s ease;
+  background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%),rgba(0,229,255,.15),transparent 65%);
+}
+.cat:hover{border-color:var(--line-strong);transform:translateY(-6px)}
+.cat:hover::before{opacity:1}
+.cat .c-ico{width:52px;height:52px;border-radius:15px;display:grid;place-items:center;background:rgba(0,229,255,.1);color:var(--cyan);border:1px solid rgba(0,229,255,.2)}
+.cat h3{font-family:var(--font-d);font-size:1.32rem;font-weight:700;letter-spacing:-.02em;margin-bottom:5px}
+.cat p{font-size:.86rem;color:var(--ink-faint)}
+.cat .c-num{position:absolute;top:20px;right:22px;font-family:var(--font-m);font-size:11px;color:var(--ink-faint)}
+@media(max-width:900px){.cat-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:540px){.cat-grid{grid-template-columns:1fr}}
+
+/* ============================================================
+   Horizontal product rail (pinned)
+   ============================================================ */
+.rail-sec{overflow:hidden}
+.rail-head{padding:0 0 54px}
+.rail-view{height:100svh;display:flex;align-items:center;overflow:hidden}
+.rail-track{display:flex;gap:26px;padding-inline:max(22px,calc((100vw - var(--max))/2));will-change:transform}
+.card{
+  position:relative;flex:none;width:min(78vw,400px);border:1px solid var(--line);border-radius:26px;
+  background:linear-gradient(180deg,rgba(20,24,36,.9),rgba(10,12,20,.9));
+  padding:26px;overflow:hidden;transition:border-color .45s ease;
+}
+.card:hover{border-color:rgba(0,229,255,.4)}
+.card-media{
+  position:relative;height:250px;border-radius:18px;overflow:hidden;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 30%,rgba(0,229,255,.16),transparent 62%),#0a0d16;
+  margin-bottom:22px;
+}
+.card-media .glow{position:absolute;width:70%;aspect-ratio:1;border-radius:50%;filter:blur(46px);background:rgba(0,229,255,.3)}
+.card:nth-child(2n) .card-media .glow{background:rgba(139,92,246,.32)}
+.card:nth-child(3n) .card-media .glow{background:rgba(255,61,129,.28)}
+.card-media svg{position:relative;width:70%;transition:transform .7s var(--ease)}
+.card:hover .card-media svg{transform:translateY(-9px) scale(1.05)}
+.card-tag{
+  position:absolute;top:14px;left:14px;z-index:2;font-family:var(--font-m);font-size:10px;
+  letter-spacing:.16em;text-transform:uppercase;padding:5px 11px;border-radius:100px;
+  background:rgba(0,229,255,.14);color:var(--cyan);border:1px solid rgba(0,229,255,.28);
+}
+.card-tag.hot{background:rgba(255,61,129,.14);color:var(--pink);border-color:rgba(255,61,129,.3)}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.card h3{font-family:var(--font-d);font-size:1.4rem;font-weight:700;letter-spacing:-.02em;line-height:1.15}
+.card .cat-lbl{font-family:var(--font-m);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px;display:block}
+.price{font-family:var(--font-d);font-size:1.35rem;font-weight:800;color:var(--cyan);white-space:nowrap}
+.price s{display:block;font-size:.72rem;color:var(--ink-faint);font-weight:400}
+.card .specs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 22px}
+.card .specs span{font-family:var(--font-m);font-size:10px;letter-spacing:.08em;padding:5px 10px;border:1px solid var(--line);border-radius:8px;color:var(--ink-dim)}
+.card-foot{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-top:18px;border-top:1px solid var(--line)}
+.stars{display:flex;gap:3px;align-items:center;color:var(--lime);font-size:12px}
+.stars b{color:var(--ink-dim);font-family:var(--font-m);font-size:11px;margin-left:6px;font-weight:400}
+.add{
+  display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line-strong);border-radius:100px;
+  padding:10px 18px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  transition:background .4s ease,color .4s ease,border-color .4s ease;
+}
+.add:hover{background:var(--cyan);color:#04060b;border-color:var(--cyan)}
+.rail-progress{height:2px;background:rgba(255,255,255,.08);width:min(100% - 44px,var(--max));margin:0 auto}
+.rail-progress i{display:block;height:100%;background:var(--grad);transform-origin:0 50%;transform:scaleX(0)}
+
+/* ============================================================
+   Spotlight (pinned scrub)
+   ============================================================ */
+.spot{height:300vh;position:relative}
+.spot-stage{
+  position:sticky;top:0;height:100svh;display:grid;place-items:center;overflow:hidden;
+}
+/* full-bleed box + grid centring, so GSAP can own the transform without
+   fighting a translate(-50%,-50%) it would otherwise overwrite */
+.spot-bg-word{
+  position:absolute;inset:0;display:grid;place-items:center;
+  font-family:var(--font-d);font-weight:800;
+  font-size:clamp(3rem,13vw,12rem);letter-spacing:-.05em;text-transform:uppercase;white-space:nowrap;
+  color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.08);pointer-events:none;
+}
+.spot-device{position:relative;width:min(46vw,400px);z-index:2;overflow:visible}
+.spot-copy{position:absolute;z-index:3;max-width:280px}
+.spot-copy h4{font-family:var(--font-d);font-size:1.15rem;font-weight:700;margin-bottom:8px;letter-spacing:-.02em}
+.spot-copy p{font-size:.88rem;color:var(--ink-dim)}
+.spot-copy .pin-line{width:56px;height:1px;background:var(--cyan);margin-bottom:16px}
+.sc-1{left:5%;top:31%}
+.sc-2{right:5%;top:31%;text-align:right}
+.sc-2 .pin-line{margin-left:auto}
+.sc-3{left:5%;bottom:15%}
+.spot-title{
+  position:absolute;top:9%;left:50%;translate:-50% 0;text-align:center;z-index:3;
+  width:100%;padding-inline:22px;
+}
+.spot-title h2{font-family:var(--font-d);font-size:clamp(1.7rem,3.9vw,3.1rem);font-weight:800;text-transform:uppercase;letter-spacing:-.03em;line-height:.95}
+.spot-title p{color:var(--ink-dim);margin-top:12px;font-size:.9rem}
+.spot-cta{position:absolute;bottom:7%;left:50%;translate:-50% 0;z-index:3}
+@media(max-width:900px){
+  .spot-copy{max-width:180px}
+  .sc-1{left:2%;top:26%}.sc-2{right:2%;top:26%}.sc-3{left:2%;bottom:20%}
+  .spot-copy p{font-size:.76rem}
+  .spot-copy h4{font-size:.95rem}
+}
+/* narrow phones: device up top, the three callouts stacked underneath it */
+@media(max-width:700px){
+  .spot-device{width:min(58vw,230px);align-self:start;margin-top:24vh}
+  .spot-copy{max-width:none;left:6%;right:6%;top:auto;bottom:auto;text-align:left}
+  .sc-2{text-align:left}
+  .sc-2 .pin-line{margin-left:0}
+  .sc-1{top:52%}
+  .sc-2{top:64%}
+  .sc-3{top:76%}
+  .spot-copy .pin-line{width:40px;margin-bottom:10px}
+  .spot-copy h4{font-size:.92rem;margin-bottom:5px}
+  .spot-copy p{font-size:.74rem;line-height:1.45}
+  .spot-cta{bottom:4%}
+  .spot-cta .btn{padding:14px 24px;font-size:12px}
+  .spot-title h2{font-size:1.55rem}
+  .spot-title p{font-size:.8rem;margin-top:8px}
+}
+
+/* ============================================================
+   Features
+   ============================================================ */
+.feat-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px}
+.feat{
+  position:relative;border:1px solid var(--line);border-radius:22px;padding:32px;overflow:hidden;
+  background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.008));
+  min-height:250px;display:flex;flex-direction:column;justify-content:space-between;
+}
+.feat.big{grid-column:span 6}
+.feat.mid{grid-column:span 3}
+.feat.wide{grid-column:span 4}
+.feat h3{font-family:var(--font-d);font-size:1.42rem;font-weight:700;letter-spacing:-.02em;margin-bottom:10px}
+.feat p{color:var(--ink-dim);font-size:.92rem;max-width:40ch}
+.feat .f-ico{width:48px;height:48px;border-radius:14px;background:var(--grad);display:grid;place-items:center;color:#04060b;margin-bottom:24px}
+.feat .f-num{position:absolute;right:24px;top:20px;font-family:var(--font-d);font-size:3.4rem;font-weight:800;color:rgba(255,255,255,.045);line-height:1}
+.feat .shine{position:absolute;inset:0;background:radial-gradient(340px circle at var(--mx,50%) var(--my,50%),rgba(139,92,246,.16),transparent 62%);opacity:0;transition:opacity .5s ease}
+.feat:hover .shine{opacity:1}
+@media(max-width:1000px){
+  .feat.big{grid-column:span 12}.feat.mid{grid-column:span 6}.feat.wide{grid-column:span 6}
+}
+@media(max-width:620px){.feat.mid,.feat.wide{grid-column:span 12}}
+
+/* ============================================================
+   Counters
+   ============================================================ */
+.stats{border-block:1px solid var(--line);padding:80px 0}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:34px}
+.stat{text-align:center}
+.stat b{
+  display:block;font-family:var(--font-d);font-weight:800;letter-spacing:-.03em;line-height:1;
+  font-size:clamp(2.4rem,5.6vw,4.2rem);
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.stat span{font-family:var(--font-m);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-faint);display:block;margin-top:12px}
+@media(max-width:760px){.stat-grid{grid-template-columns:repeat(2,1fr);gap:44px}}
+
+/* ============================================================
+   Testimonials
+   ============================================================ */
+.tst-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.tst{
+  border:1px solid var(--line);border-radius:22px;padding:30px;
+  background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.008));
+  display:flex;flex-direction:column;gap:20px;
+}
+.tst .q{font-size:1.02rem;line-height:1.65;color:#dfe4f5}
+.tst .who{display:flex;align-items:center;gap:13px;margin-top:auto;padding-top:18px;border-top:1px solid var(--line)}
+.tst .av{width:42px;height:42px;border-radius:50%;background:var(--grad);display:grid;place-items:center;color:#04060b;font-weight:700;font-size:14px}
+.tst .who b{display:block;font-size:.9rem}
+.tst .who span{font-family:var(--font-m);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint)}
+@media(max-width:900px){.tst-grid{grid-template-columns:1fr}}
+
+/* ============================================================
+   CTA
+   ============================================================ */
+.cta{
+  position:relative;border:1px solid var(--line-strong);border-radius:32px;overflow:hidden;
+  padding:clamp(46px,7vw,88px);text-align:center;
+  background:linear-gradient(150deg,rgba(0,229,255,.09),rgba(139,92,246,.09) 55%,rgba(255,61,129,.08));
+}
+.cta h2{font-family:var(--font-d);font-size:clamp(2.1rem,6.2vw,5rem);font-weight:800;text-transform:uppercase;letter-spacing:-.035em;line-height:.93}
+.cta p{color:var(--ink-dim);max-width:52ch;margin:22px auto 0}
+.form{display:flex;gap:12px;max-width:520px;margin:40px auto 0;flex-wrap:wrap;justify-content:center}
+.form input{
+  flex:1;min-width:250px;background:rgba(5,6,10,.6);border:1px solid var(--line-strong);border-radius:100px;
+  padding:17px 24px;color:var(--ink);font-size:14px;outline:none;transition:border-color .35s ease;
+}
+.form input:focus{border-color:var(--cyan)}
+.form input::placeholder{color:var(--ink-faint)}
+.cta-note{margin-top:18px;font-family:var(--font-m);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint)}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.foot{border-top:1px solid var(--line);padding:80px 0 34px;margin-top:clamp(80px,10vw,130px)}
+.foot-top{display:grid;grid-template-columns:1.6fr repeat(3,1fr);gap:44px;padding-bottom:56px}
+.foot-brand p{color:var(--ink-dim);font-size:.92rem;max-width:38ch;margin-top:18px}
+.socials{display:flex;gap:10px;margin-top:26px}
+.socials a{
+  width:40px;height:40px;border:1px solid var(--line-strong);border-radius:12px;display:grid;place-items:center;
+  color:var(--ink-dim);transition:all .35s ease;
+}
+.socials a:hover{background:var(--cyan);color:#04060b;border-color:var(--cyan);transform:translateY(-3px)}
+.fcol h4{font-family:var(--font-m);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:20px}
+.fcol a{display:block;color:var(--ink-dim);font-size:.92rem;padding:6px 0;transition:color .3s ease,transform .4s var(--ease)}
+.fcol a:hover{color:var(--cyan);transform:translateX(4px)}
+.foot-word{
+  font-family:var(--font-d);font-weight:800;text-transform:uppercase;letter-spacing:-.04em;
+  font-size:clamp(3.4rem,17vw,15rem);line-height:.8;text-align:center;
+  background:linear-gradient(180deg,rgba(242,245,255,.14),rgba(242,245,255,.01));
+  -webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:.06em;
+}
+.foot-bot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;padding-top:30px;border-top:1px solid var(--line);color:var(--ink-faint);font-size:12px}
+@media(max-width:900px){.foot-top{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.foot-top{grid-template-columns:1fr}}
+
+/* progress bar */
+.page-progress{position:fixed;top:0;left:0;height:2px;width:100%;background:var(--grad);transform:scaleX(0);transform-origin:0 50%;z-index:900}
+
+/* reveal defaults (JS overrides; safe if JS fails) */
+.no-js-safe{opacity:1}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+
+<body>
+
+<!-- ══════════════ PRELOADER ══════════════ -->
+<div id="loader">
+  <div class="l-inner">
+    <div class="l-mark" id="lMark"></div>
+    <div class="l-tag" id="lTag">Future-grade tech gadgets</div>
+    <div class="l-bar"><i id="lBar"></i></div>
+    <div class="l-num"><span id="lStatus">Booting inventory…</span><span id="lPct">0%</span></div>
+  </div>
+</div>
+<div class="loader-curtain" id="curtain"></div>
+
+<!-- ══════════════ CURSOR ══════════════ -->
+<div class="cursor-ring" id="cRing"><span class="c-label" id="cLabel">view</span></div>
+<div class="cursor-dot" id="cDot"></div>
+
+<!-- ══════════════ BACKGROUND ══════════════ -->
+<canvas id="fx-canvas"></canvas>
+<div class="grid-bg" id="gridBg"></div>
+<div class="aurora a1" data-aurora></div>
+<div class="aurora a2" data-aurora></div>
+<div class="aurora a3" data-aurora></div>
+<div class="noise"></div>
+<div class="page-progress" id="pageProgress"></div>
+
+<!-- ══════════════ NAV ══════════════ -->
+<header class="nav" id="nav">
+  <div class="wrap nav-in">
+    <a href="#top" class="brand" data-magnet>
+      <span class="brand-mark">YS</span>
+      <span>YS<em>.</em>STORE</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#categories">Shop</a>
+      <a href="#drops">New Drops</a>
+      <a href="#spotlight">Spotlight</a>
+      <a href="#why">Why YS</a>
+      <a href="#reviews">Reviews</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="#newsletter" class="cart-btn" data-magnet data-cursor="cart">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+        <span class="lbl">Cart</span><span class="cart-count" id="cartCount">0</span>
+      </a>
+      <button class="burger" aria-label="Menu"><i></i><i></i></button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ══════════════ HERO ══════════════ -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-text">
+      <div class="hero-badge" data-hero-fade><b>NEW</b> Drop 07 — Neural Audio Series is live</div>
+
+      <h1>
+        <span class="line" data-split>Gear From</span><br />
+        <span class="line l2" data-split>Tomorrow</span><br />
+        <span class="line l3" data-split>Today.</span>
+      </h1>
+
+      <p class="hero-copy" data-hero-fade>
+        YS STORE curates the sharpest tech on the planet — audio, wearables, drones and desk
+        hardware, stress-tested by our lab before it ever reaches your cart.
+      </p>
+
+      <div class="hero-actions" data-hero-fade>
+        <a href="#drops" class="btn btn-primary" data-magnet data-cursor="shop">
+          Shop the drop
+          <svg class="arw" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="#spotlight" class="btn btn-ghost" data-magnet>
+          Watch the tech
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </a>
+      </div>
+
+      <div class="hero-stats" data-hero-fade>
+        <div class="hstat"><b data-count="240" data-suffix="+">0</b><span>Gadgets in stock</span></div>
+        <div class="hstat"><b data-count="98" data-suffix="k">0</b><span>Orders shipped</span></div>
+        <div class="hstat"><b data-count="4.9" data-decimals="1">0</b><span>Average rating</span></div>
+      </div>
+    </div>
+
+    <div class="hero-visual" id="heroVisual">
+      <div class="orb" data-par="0.06"></div>
+      <div class="ring r3" data-spin="46"><i></i></div>
+      <div class="ring r1" data-spin="-30"><i></i></div>
+      <div class="ring r2" data-spin="22"><i></i></div>
+
+      <!-- headphones -->
+      <svg class="hero-device" data-par="0.14" viewBox="0 0 400 400" fill="none">
+        <defs>
+          <linearGradient id="gA" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#00e5ff"/><stop offset="55%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#ff3d81"/>
+          </linearGradient>
+          <linearGradient id="gB" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#2a3145"/><stop offset="100%" stop-color="#11141f"/>
+          </linearGradient>
+          <filter id="soft"><feGaussianBlur stdDeviation="10"/></filter>
+        </defs>
+        <ellipse cx="200" cy="330" rx="120" ry="18" fill="#00e5ff" opacity=".16" filter="url(#soft)"/>
+        <path d="M92 232v-46a108 108 0 0 1 216 0v46" stroke="url(#gA)" stroke-width="15" stroke-linecap="round"/>
+        <path d="M92 232v-46a108 108 0 0 1 216 0v46" stroke="#ffffff" stroke-opacity=".2" stroke-width="4" stroke-linecap="round"/>
+        <rect x="58" y="212" width="66" height="112" rx="30" fill="url(#gB)" stroke="url(#gA)" stroke-width="3"/>
+        <rect x="276" y="212" width="66" height="112" rx="30" fill="url(#gB)" stroke="url(#gA)" stroke-width="3"/>
+        <rect x="74" y="234" width="34" height="68" rx="17" fill="#00e5ff" opacity=".22"/>
+        <rect x="292" y="234" width="34" height="68" rx="17" fill="#8b5cf6" opacity=".26"/>
+        <circle cx="91" cy="268" r="7" fill="#00e5ff"/>
+        <circle cx="309" cy="268" r="7" fill="#ff3d81"/>
+      </svg>
+
+      <div class="float-card fc-1" data-float="1" data-par="0.22">
+        <span class="fc-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>
+        <div><b>48h Battery</b><span>ANC ON</span></div>
+      </div>
+      <div class="float-card fc-2" data-float="2" data-par="0.18">
+        <span class="fc-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 6v6c0 5 3.4 9.3 8 10 4.6-.7 8-5 8-10V6l-8-4z"/></svg></span>
+        <div><b>2-Year Warranty</b><span>YS Protect</span></div>
+      </div>
+      <div class="float-card fc-3" data-float="3" data-par="0.26">
+        <span class="fc-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></span>
+        <div><b>Lab Tested</b><span>112 checks</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-cue" data-hero-fade>
+    <span>Scroll</span>
+    <span class="track"><i id="cueBar"></i></span>
+  </div>
+</section>
+
+<!-- ══════════════ MARQUEE ══════════════ -->
+<div class="marquee">
+  <div class="mq-track" id="mqTrack">
+    <div class="mq-item">
+      <span>Free 24h Shipping</span><span class="dot"></span>
+      <span class="out">30-Day Returns</span><span class="dot"></span>
+      <span>Lab Verified</span><span class="dot"></span>
+      <span class="out">Official Warranty</span><span class="dot"></span>
+      <span>Price Match</span><span class="dot"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ CATEGORIES ══════════════ -->
+<section class="sec" id="categories">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <span class="eyebrow" data-reveal>Browse the arsenal</span>
+        <h2 class="sec-title" data-split-lines style="margin-top:18px">Pick your <span class="grad">category</span></h2>
+      </div>
+      <p class="sec-sub" data-reveal>Eight departments, one obsession: hardware that actually earns the space on your desk, wrist, or backpack.</p>
+    </div>
+
+    <div class="cat-grid" id="catGrid">
+      <article class="cat" data-stagger data-tilt>
+        <span class="c-num">01</span>
+        <span class="c-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2" y="14" width="5" height="7" rx="2"/><rect x="17" y="14" width="5" height="7" rx="2"/></svg></span>
+        <div><h3>Audio</h3><p>Headphones, earbuds, monitors and portable amps.</p></div>
+      </article>
+      <article class="cat" data-stagger data-tilt>
+        <span class="c-num">02</span>
+        <span class="c-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="6" width="12" height="12" rx="3"/><path d="M9 2h6M9 22h6"/></svg></span>
+        <div><h3>Wearables</h3><p>Smartwatches, rings and health-grade trackers.</p></div>
+      </article>
+      <article class="cat" data-stagger data-tilt>
+        <span class="c-num">03</span>
+        <span class="c-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M5 5 9 9M19 5l-4 4M5 19l4-4M19 19l-4-4"/><circle cx="4" cy="4" r="2"/><circle cx="20" cy="4" r="2"/><circle cx="4" cy="20" r="2"/><circle cx="20" cy="20" r="2"/></svg></span>
+        <div><h3>Drones</h3><p>Cinema-grade flight kit with obstacle sensing.</p></div>
+      </article>
+      <article class="cat" data-stagger data-tilt>
+        <span class="c-num">04</span>
+        <span class="c-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="12" rx="3"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg></span>
+        <div><h3>Desk Setup</h3><p>Mechanical boards, docks, monitors, lighting.</p></div>
+      </article>
+      <article class="cat" data-stagger data-tilt>
+        <span class="c-num">05</span>
+        <span class="c-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="11" rx="4"/><circle cx="8" cy="12.5" r="2"/><circle cx="16" cy="12.5" r="2"/></svg></span>
+        <div><h3>XR &amp; Vision</h3><p>Headsets, smart glasses and spatial cameras.</p></div>
+      </article>
+      <article class="cat" data-stagger data-tilt>
+        <span class="c-num">06</span>
+        <span class="c-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="2" width="10" height="20" rx="3"/><path d="M11 18h2"/></svg></span>
+        <div><h3>Mobile</h3><p>Power banks, chargers, mounts and cases.</p></div>
+      </article>
+      <article class="cat" data-stagger data-tilt>
+        <span class="c-num">07</span>
+        <span class="c-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg></span>
+        <div><h3>Smart Home</h3><p>Hubs, sensors, robot vacs and ambient light.</p></div>
+      </article>
+      <article class="cat" data-stagger data-tilt>
+        <span class="c-num">08</span>
+        <span class="c-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V8l8-5 8 5v12"/><path d="M9 20v-6h6v6"/></svg></span>
+        <div><h3>Creator Kit</h3><p>Mics, lights, capture cards and gimbals.</p></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ HORIZONTAL RAIL ══════════════ -->
+<section class="rail-sec" id="drops">
+  <div class="wrap rail-head">
+    <div class="sec-head" style="margin-bottom:0">
+      <div>
+        <span class="eyebrow" data-reveal>Drop 07 — live now</span>
+        <h2 class="sec-title" data-split-lines style="margin-top:18px">Fresh <span class="grad">hardware</span></h2>
+      </div>
+      <p class="sec-sub" data-reveal>Scroll sideways. Eight units that made it through our lab this month — each one benchmarked, torn down, and re-assembled before we listed it.</p>
+    </div>
+  </div>
+
+  <div class="rail-view" id="railView">
+    <div class="rail-track" id="railTrack">
+
+      <article class="card" data-cursor="view">
+        <div class="card-media"><span class="card-tag">Best seller</span><span class="glow"></span>
+          <svg viewBox="0 0 200 200" fill="none">
+            <path d="M46 116V94a54 54 0 0 1 108 0v22" stroke="url(#gA)" stroke-width="9" stroke-linecap="round"/>
+            <rect x="28" y="106" width="34" height="58" rx="16" fill="#161b28" stroke="url(#gA)" stroke-width="2"/>
+            <rect x="138" y="106" width="34" height="58" rx="16" fill="#161b28" stroke="url(#gA)" stroke-width="2"/>
+            <circle cx="45" cy="135" r="5" fill="#00e5ff"/><circle cx="155" cy="135" r="5" fill="#ff3d81"/>
+          </svg>
+        </div>
+        <div class="card-top">
+          <div><span class="cat-lbl">Audio</span><h3>YS Aurora Pro</h3></div>
+          <div class="price">$249<s>$319</s></div>
+        </div>
+        <div class="specs"><span>ANC 48dB</span><span>48h</span><span>LDAC</span></div>
+        <div class="card-foot">
+          <div class="stars">★★★★★<b>4.9 (2.1k)</b></div>
+          <button class="add" data-add>Add +</button>
+        </div>
+      </article>
+
+      <article class="card" data-cursor="view">
+        <div class="card-media"><span class="card-tag hot">Hot</span><span class="glow"></span>
+          <svg viewBox="0 0 200 200" fill="none">
+            <rect x="62" y="46" width="76" height="108" rx="26" fill="#161b28" stroke="url(#gA)" stroke-width="3"/>
+            <rect x="74" y="60" width="52" height="80" rx="18" fill="#00e5ff" opacity=".16"/>
+            <path d="M86 100h10l5-14 8 26 5-12h10" stroke="#00e5ff" stroke-width="3" stroke-linecap="round"/>
+            <path d="M84 46V32h32v14M84 154v14h32v-14" stroke="#8b5cf6" stroke-width="7" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="card-top">
+          <div><span class="cat-lbl">Wearables</span><h3>YS Pulse Watch 3</h3></div>
+          <div class="price">$189<s>$229</s></div>
+        </div>
+        <div class="specs"><span>AMOLED</span><span>ECG</span><span>14 days</span></div>
+        <div class="card-foot">
+          <div class="stars">★★★★★<b>4.8 (980)</b></div>
+          <button class="add" data-add>Add +</button>
+        </div>
+      </article>
+
+      <article class="card" data-cursor="view">
+        <div class="card-media"><span class="card-tag">New</span><span class="glow"></span>
+          <svg viewBox="0 0 200 200" fill="none">
+            <circle cx="100" cy="100" r="22" fill="#161b28" stroke="url(#gA)" stroke-width="3"/>
+            <circle cx="100" cy="100" r="8" fill="#00e5ff"/>
+            <path d="M78 82 52 56M122 82l26-26M78 118l-26 26M122 118l26 26" stroke="#8b5cf6" stroke-width="6" stroke-linecap="round"/>
+            <circle cx="46" cy="50" r="16" stroke="#00e5ff" stroke-width="3"/>
+            <circle cx="154" cy="50" r="16" stroke="#00e5ff" stroke-width="3"/>
+            <circle cx="46" cy="150" r="16" stroke="#ff3d81" stroke-width="3"/>
+            <circle cx="154" cy="150" r="16" stroke="#ff3d81" stroke-width="3"/>
+          </svg>
+        </div>
+        <div class="card-top">
+          <div><span class="cat-lbl">Drones</span><h3>YS Skyline X2</h3></div>
+          <div class="price">$899<s>$1099</s></div>
+        </div>
+        <div class="specs"><span>8K/60</span><span>42min</span><span>360° sense</span></div>
+        <div class="card-foot">
+          <div class="stars">★★★★★<b>4.9 (412)</b></div>
+          <button class="add" data-add>Add +</button>
+        </div>
+      </article>
+
+      <article class="card" data-cursor="view">
+        <div class="card-media"><span class="card-tag">Editor's pick</span><span class="glow"></span>
+          <svg viewBox="0 0 200 200" fill="none">
+            <rect x="24" y="70" width="152" height="66" rx="14" fill="#161b28" stroke="url(#gA)" stroke-width="3"/>
+            <g fill="#00e5ff" opacity=".55">
+              <rect x="38" y="84" width="16" height="14" rx="4"/><rect x="60" y="84" width="16" height="14" rx="4"/>
+              <rect x="82" y="84" width="16" height="14" rx="4"/><rect x="104" y="84" width="16" height="14" rx="4"/>
+              <rect x="126" y="84" width="16" height="14" rx="4"/><rect x="148" y="84" width="14" height="14" rx="4"/>
+            </g>
+            <g fill="#8b5cf6" opacity=".5">
+              <rect x="46" y="106" width="16" height="14" rx="4"/><rect x="68" y="106" width="16" height="14" rx="4"/>
+              <rect x="90" y="106" width="42" height="14" rx="4"/><rect x="138" y="106" width="16" height="14" rx="4"/>
+            </g>
+          </svg>
+        </div>
+        <div class="card-top">
+          <div><span class="cat-lbl">Desk Setup</span><h3>YS Vector 75 TKL</h3></div>
+          <div class="price">$159<s>$199</s></div>
+        </div>
+        <div class="specs"><span>Hall effect</span><span>8kHz</span><span>Gasket</span></div>
+        <div class="card-foot">
+          <div class="stars">★★★★★<b>4.9 (1.4k)</b></div>
+          <button class="add" data-add>Add +</button>
+        </div>
+      </article>
+
+      <article class="card" data-cursor="view">
+        <div class="card-media"><span class="card-tag hot">Limited</span><span class="glow"></span>
+          <svg viewBox="0 0 200 200" fill="none">
+            <rect x="26" y="66" width="148" height="70" rx="30" fill="#161b28" stroke="url(#gA)" stroke-width="3"/>
+            <circle cx="70" cy="101" r="18" fill="#00e5ff" opacity=".2" stroke="#00e5ff" stroke-width="2"/>
+            <circle cx="130" cy="101" r="18" fill="#8b5cf6" opacity=".2" stroke="#8b5cf6" stroke-width="2"/>
+            <path d="M26 92c-10 4-14 12-10 20M174 92c10 4 14 12 10 20" stroke="#ff3d81" stroke-width="6" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="card-top">
+          <div><span class="cat-lbl">XR &amp; Vision</span><h3>YS Vision Air</h3></div>
+          <div class="price">$649<s>$799</s></div>
+        </div>
+        <div class="specs"><span>4K/eye</span><span>120Hz</span><span>Pancake</span></div>
+        <div class="card-foot">
+          <div class="stars">★★★★☆<b>4.7 (306)</b></div>
+          <button class="add" data-add>Add +</button>
+        </div>
+      </article>
+
+      <article class="card" data-cursor="view">
+        <div class="card-media"><span class="card-tag">Bundle</span><span class="glow"></span>
+          <svg viewBox="0 0 200 200" fill="none">
+            <rect x="66" y="38" width="68" height="124" rx="26" fill="#161b28" stroke="url(#gA)" stroke-width="3"/>
+            <circle cx="100" cy="76" r="14" stroke="#00e5ff" stroke-width="3"/>
+            <circle cx="100" cy="120" r="20" stroke="#8b5cf6" stroke-width="3"/>
+            <circle cx="100" cy="120" r="7" fill="#ff3d81"/>
+          </svg>
+        </div>
+        <div class="card-top">
+          <div><span class="cat-lbl">Audio</span><h3>YS Boom Mini</h3></div>
+          <div class="price">$89<s>$119</s></div>
+        </div>
+        <div class="specs"><span>360° sound</span><span>IP67</span><span>20h</span></div>
+        <div class="card-foot">
+          <div class="stars">★★★★★<b>4.8 (2.7k)</b></div>
+          <button class="add" data-add>Add +</button>
+        </div>
+      </article>
+
+      <article class="card" data-cursor="view">
+        <div class="card-media"><span class="card-tag">New</span><span class="glow"></span>
+          <svg viewBox="0 0 200 200" fill="none">
+            <rect x="40" y="62" width="120" height="80" rx="16" fill="#161b28" stroke="url(#gA)" stroke-width="3"/>
+            <circle cx="100" cy="102" r="26" stroke="#00e5ff" stroke-width="3"/>
+            <circle cx="100" cy="102" r="12" fill="#8b5cf6" opacity=".7"/>
+            <rect x="120" y="74" width="26" height="10" rx="5" fill="#ff3d81" opacity=".8"/>
+            <path d="M74 62l10-16h32l10 16" stroke="url(#gA)" stroke-width="3" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="card-top">
+          <div><span class="cat-lbl">Creator Kit</span><h3>YS Frame R1</h3></div>
+          <div class="price">$1,290<s>$1,490</s></div>
+        </div>
+        <div class="specs"><span>Full-frame</span><span>6K RAW</span><span>IBIS</span></div>
+        <div class="card-foot">
+          <div class="stars">★★★★★<b>4.9 (188)</b></div>
+          <button class="add" data-add>Add +</button>
+        </div>
+      </article>
+
+      <article class="card" data-cursor="view">
+        <div class="card-media"><span class="card-tag">Restocked</span><span class="glow"></span>
+          <svg viewBox="0 0 200 200" fill="none">
+            <rect x="54" y="50" width="92" height="106" rx="18" fill="#161b28" stroke="url(#gA)" stroke-width="3"/>
+            <rect x="70" y="70" width="60" height="10" rx="5" fill="#00e5ff" opacity=".7"/>
+            <rect x="70" y="90" width="60" height="10" rx="5" fill="#8b5cf6" opacity=".6"/>
+            <rect x="70" y="110" width="36" height="10" rx="5" fill="#ff3d81" opacity=".6"/>
+            <path d="M92 50V36h16v14" stroke="url(#gA)" stroke-width="6" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="card-top">
+          <div><span class="cat-lbl">Mobile</span><h3>YS Cell 20K GaN</h3></div>
+          <div class="price">$79<s>$99</s></div>
+        </div>
+        <div class="specs"><span>140W</span><span>20,000mAh</span><span>USB-C ×3</span></div>
+        <div class="card-foot">
+          <div class="stars">★★★★★<b>4.8 (3.3k)</b></div>
+          <button class="add" data-add>Add +</button>
+        </div>
+      </article>
+
+    </div>
+  </div>
+  <div class="rail-progress"><i id="railBar"></i></div>
+</section>
+
+<!-- ══════════════ SPOTLIGHT ══════════════ -->
+<section class="spot" id="spotlight">
+  <div class="spot-stage">
+    <div class="spot-bg-word" id="spotWord">AURORA PRO</div>
+
+    <div class="spot-title">
+      <h2 data-split-lines>Engineered <span class="grad">obsessively</span></h2>
+      <p id="spotP">Scroll to disassemble the YS Aurora Pro.</p>
+    </div>
+
+    <svg class="spot-device" id="spotDevice" viewBox="0 0 400 340" fill="none">
+      <ellipse cx="200" cy="300" rx="130" ry="16" fill="#8b5cf6" opacity=".2" filter="url(#soft)"/>
+      <g id="spBand">
+        <path d="M92 212v-46a108 108 0 0 1 216 0v46" stroke="url(#gA)" stroke-width="16" stroke-linecap="round"/>
+        <path d="M92 212v-46a108 108 0 0 1 216 0v46" stroke="#fff" stroke-opacity=".18" stroke-width="4" stroke-linecap="round"/>
+      </g>
+      <g id="spLeft">
+        <rect x="56" y="192" width="70" height="118" rx="32" fill="#131826" stroke="url(#gA)" stroke-width="3"/>
+        <rect x="73" y="216" width="36" height="70" rx="18" fill="#00e5ff" opacity=".22"/>
+        <circle cx="91" cy="251" r="8" fill="#00e5ff"/>
+      </g>
+      <g id="spRight">
+        <rect x="274" y="192" width="70" height="118" rx="32" fill="#131826" stroke="url(#gA)" stroke-width="3"/>
+        <rect x="291" y="216" width="36" height="70" rx="18" fill="#8b5cf6" opacity=".26"/>
+        <circle cx="309" cy="251" r="8" fill="#ff3d81"/>
+      </g>
+      <g id="spCore" opacity="0">
+        <circle cx="200" cy="180" r="52" stroke="#00e5ff" stroke-width="2" stroke-dasharray="5 7"/>
+        <circle cx="200" cy="180" r="30" stroke="#ff3d81" stroke-width="2"/>
+        <path d="M186 180h8l5-14 8 28 6-16h11" stroke="#c8ff2f" stroke-width="3" stroke-linecap="round"/>
+      </g>
+    </svg>
+
+    <div class="spot-copy sc-1"><div class="pin-line"></div><h4>Hybrid ANC 48dB</h4><p>Six mics and an adaptive DSP kill engine drone, keyboard clack and café hum in real time.</p></div>
+    <div class="spot-copy sc-2"><div class="pin-line"></div><h4>48-Hour Cell</h4><p>Ten minutes on the charger buys eight hours of playback. Full charge in 55 minutes.</p></div>
+    <div class="spot-copy sc-3"><div class="pin-line"></div><h4>Titanium Drivers</h4><p>40mm titanium-coated diaphragms tuned in our lab against a 12-track reference set.</p></div>
+
+    <div class="spot-cta"><a href="#newsletter" class="btn btn-primary" data-magnet>Add to cart — $249
+      <svg class="arw" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div>
+  </div>
+</section>
+
+<!-- ══════════════ FEATURES ══════════════ -->
+<section class="sec" id="why">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <span class="eyebrow" data-reveal>Why YS STORE</span>
+        <h2 class="sec-title" data-split-lines style="margin-top:18px">Built for <span class="grad">believers</span></h2>
+      </div>
+      <p class="sec-sub" data-reveal>We don't dropship. Every SKU passes a 112-point bench test before it earns a slot on this page.</p>
+    </div>
+
+    <div class="feat-grid">
+      <article class="feat big" data-stagger data-tilt>
+        <span class="shine"></span><span class="f-num">01</span>
+        <span class="f-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></span>
+        <div><h3>112-point lab test</h3><p>Battery drain curves, thermal soak, drop cycles and latency benchmarks — published on every product page, not hidden in a spec sheet.</p></div>
+      </article>
+      <article class="feat mid" data-stagger data-tilt>
+        <span class="shine"></span><span class="f-num">02</span>
+        <span class="f-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg></span>
+        <div><h3>24h dispatch</h3><p>Ordered before 6pm? It leaves the warehouse the same night.</p></div>
+      </article>
+      <article class="feat mid" data-stagger data-tilt>
+        <span class="shine"></span><span class="f-num">03</span>
+        <span class="f-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 2 4 6v6c0 5 3.4 9.3 8 10 4.6-.7 8-5 8-10V6l-8-4z"/></svg></span>
+        <div><h3>2-year YS Protect</h3><p>Accidental damage included. One claim, no forms, no phone tree.</p></div>
+      </article>
+      <article class="feat wide" data-stagger data-tilt>
+        <span class="shine"></span><span class="f-num">04</span>
+        <span class="f-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.6"/><path d="M22 4 12 14l-3-3"/></svg></span>
+        <div><h3>30-day real returns</h3><p>Use it hard. If it's not for you, we collect it from your door and refund in 48 hours.</p></div>
+      </article>
+      <article class="feat wide" data-stagger data-tilt>
+        <span class="shine"></span><span class="f-num">05</span>
+        <span class="f-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span>
+        <div><h3>Human support, 24/7</h3><p>Median first reply: 4 minutes. Real engineers, not a script.</p></div>
+      </article>
+      <article class="feat wide" data-stagger data-tilt>
+        <span class="shine"></span><span class="f-num">06</span>
+        <span class="f-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+        <div><h3>Price match +5%</h3><p>Find it cheaper anywhere legit and we beat it by five percent.</p></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ STATS ══════════════ -->
+<section class="stats">
+  <div class="wrap stat-grid">
+    <div class="stat"><b data-count="98" data-suffix="k+">0</b><span>Orders shipped</span></div>
+    <div class="stat"><b data-count="240" data-suffix="+">0</b><span>Gadgets curated</span></div>
+    <div class="stat"><b data-count="112" data-suffix="">0</b><span>Lab checks / unit</span></div>
+    <div class="stat"><b data-count="4.9" data-decimals="1" data-suffix="★">0</b><span>Average rating</span></div>
+  </div>
+</section>
+
+<!-- ══════════════ TESTIMONIALS ══════════════ -->
+<section class="sec" id="reviews">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <span class="eyebrow" data-reveal>Verified buyers</span>
+        <h2 class="sec-title" data-split-lines style="margin-top:18px">People who <span class="grad">shop here</span></h2>
+      </div>
+      <p class="sec-sub" data-reveal>4.9 average across 12,400 verified reviews. Here's a slice.</p>
+    </div>
+
+    <div class="tst-grid">
+      <article class="tst" data-stagger>
+        <div class="stars">★★★★★</div>
+        <p class="q">"The Aurora Pro landed the next morning and the published battery curve was dead accurate — 46h with ANC on. First store I've seen post real numbers."</p>
+        <div class="who"><span class="av">MR</span><div><b>Maya Rahman</b><span>Sound engineer</span></div></div>
+      </article>
+      <article class="tst" data-stagger>
+        <div class="stars">★★★★★</div>
+        <p class="q">"Cracked my Skyline X2 into a tree on week two. YS Protect replaced it in four days, no argument, no forms. That's why I keep coming back."</p>
+        <div class="who"><span class="av">DK</span><div><b>Daniel Koch</b><span>Drone pilot</span></div></div>
+      </article>
+      <article class="tst" data-stagger>
+        <div class="stars">★★★★★</div>
+        <p class="q">"Support answered at 2am with an actual firmware fix for my Vector 75, not a copy-paste macro. Whole desk is YS now."</p>
+        <div class="who"><span class="av">AS</span><div><b>Amira Saleh</b><span>Software dev</span></div></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ CTA ══════════════ -->
+<section class="sec" id="newsletter" style="padding-top:0">
+  <div class="wrap">
+    <div class="cta">
+      <span class="eyebrow" style="justify-content:center">Drop 08 lands in 11 days</span>
+      <h2 style="margin-top:20px" data-split-lines>Get first access</h2>
+      <p>Subscribers get the drop 24 hours early, plus a 10% welcome code on your first order. No spam — roughly two emails a month.</p>
+      <form class="form" id="subForm" novalidate>
+        <input type="email" id="subEmail" placeholder="you@domain.com" aria-label="Email address" required />
+        <button type="submit" class="btn btn-primary" data-magnet>Notify me
+          <svg class="arw" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </form>
+      <p class="cta-note" id="subNote">No spam · Unsubscribe anytime</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a href="#top" class="brand"><span class="brand-mark">YS</span><span>YS<em>.</em>STORE</span></a>
+        <p>Future-grade tech gadgets, lab-tested and honestly listed. Built by people who use every single thing they sell.</p>
+        <div class="socials">
+          <a href="#" aria-label="X" data-magnet><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-6.9L4.8 22H1.4l7.9-9L1 2h7l4.8 6.3L18.2 2zm-1.2 18h1.9L7.1 4H5.1l11.9 16z"/></svg></a>
+          <a href="#" aria-label="Instagram" data-magnet><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+          <a href="#" aria-label="YouTube" data-magnet><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23 12s0-3.6-.5-5.3a2.8 2.8 0 0 0-2-2C18.8 4.2 12 4.2 12 4.2s-6.8 0-8.5.5a2.8 2.8 0 0 0-2 2C1 8.4 1 12 1 12s0 3.6.5 5.3a2.8 2.8 0 0 0 2 2c1.7.5 8.5.5 8.5.5s6.8 0 8.5-.5a2.8 2.8 0 0 0 2-2C23 15.6 23 12 23 12zM9.8 15.3V8.7l5.7 3.3-5.7 3.3z"/></svg></a>
+          <a href="#" aria-label="TikTok" data-magnet><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 2h-3v13.2a2.7 2.7 0 1 1-2.2-2.7v-3a5.7 5.7 0 1 0 5.2 5.7V9.4a7.3 7.3 0 0 0 4 1.2V7.7a4.4 4.4 0 0 1-4-4.4V2z"/></svg></a>
+        </div>
+      </div>
+      <div class="fcol"><h4>Shop</h4><a href="#drops">New drops</a><a href="#categories">Audio</a><a href="#categories">Wearables</a><a href="#categories">Drones</a><a href="#categories">Desk setup</a></div>
+      <div class="fcol"><h4>Support</h4><a href="#">Track order</a><a href="#">Returns</a><a href="#">YS Protect</a><a href="#">Contact</a><a href="#">FAQ</a></div>
+      <div class="fcol"><h4>Company</h4><a href="#why">About</a><a href="#">The Lab</a><a href="#">Careers</a><a href="#">Press</a><a href="#">Affiliates</a></div>
+    </div>
+  </div>
+  <div class="foot-word" id="footWord">YS STORE</div>
+  <div class="wrap">
+    <div class="foot-bot">
+      <span>© <span id="year">2026</span> YS STORE. All rights reserved.</span>
+      <span>Privacy · Terms · Cookies</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ══════════════ GSAP ══════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollToPlugin.min.js"></script>
+
+<script>
+(function () {
+  "use strict";
+
+  var hasGSAP = typeof window.gsap !== "undefined";
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var isTouch = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+
+  document.getElementById("year").textContent = new Date().getFullYear();
+
+  /* ---------- graceful degradation if the CDN is blocked ---------- */
+  if (!hasGSAP) {
+    document.getElementById("loader").style.display = "none";
+    document.getElementById("curtain").style.display = "none";
+    return;
+  }
+
+  var hasScrollTo = typeof window.ScrollToPlugin !== "undefined";
+  gsap.registerPlugin(ScrollTrigger);
+  if (hasScrollTo) gsap.registerPlugin(ScrollToPlugin);
+  gsap.defaults({ ease: "power3.out" });
+
+  /* ============================================================
+     Text splitting helpers
+     ============================================================ */
+  function splitChars(el) {
+    var text = el.textContent;
+    el.textContent = "";
+    var frag = document.createDocumentFragment();
+    var words = text.split(" ");
+    words.forEach(function (word, wi) {
+      var w = document.createElement("span");
+      w.className = "word";
+      word.split("").forEach(function (ch) {
+        var mask = document.createElement("span");
+        mask.className = "char-mask";
+        var c = document.createElement("span");
+        c.className = "char";
+        c.textContent = ch;
+        mask.appendChild(c);
+        w.appendChild(mask);
+      });
+      frag.appendChild(w);
+      if (wi < words.length - 1) frag.appendChild(document.createTextNode(" "));
+    });
+    el.appendChild(frag);
+    return el.querySelectorAll(".char");
+  }
+
+  function splitWords(el) {
+    var nodes = Array.prototype.slice.call(el.childNodes);
+    var out = [];
+    nodes.forEach(function (node) {
+      if (node.nodeType === 3) {
+        var frag = document.createDocumentFragment();
+        node.textContent.split(/(\s+)/).forEach(function (part) {
+          if (!part.trim()) { frag.appendChild(document.createTextNode(part)); return; }
+          var mask = document.createElement("span");
+          mask.className = "char-mask";
+          var w = document.createElement("span");
+          w.className = "char";
+          w.textContent = part;
+          mask.appendChild(w);
+          frag.appendChild(mask);
+          out.push(w);
+        });
+        el.replaceChild(frag, node);
+      } else if (node.nodeType === 1) {
+        out = out.concat(splitWords(node));
+      }
+    });
+    return out;
+  }
+
+  /* Paint a continuous gradient across split characters.
+     `background-clip:text` on the parent breaks the moment GSAP puts a
+     transform on each child, so colour the characters individually instead. */
+  var gradRamp = gsap.utils.interpolate(["#00e5ff", "#8b5cf6", "#ff3d81"]);
+  function paintGradient(el) {
+    var chars = Array.prototype.slice.call(el.querySelectorAll(".char"));
+    if (!chars.length) return;
+    el.classList.add("painted");
+
+    /* word-level splits give too few stops for the ramp to read — break those
+       down one more level so the gradient still sweeps across the phrase */
+    var stops = chars;
+    if (chars.length < 3) {
+      stops = [];
+      chars.forEach(function (c) {
+        var txt = c.textContent;
+        c.textContent = "";
+        txt.split("").forEach(function (ch) {
+          var s = document.createElement("span");
+          s.style.display = "inline-block";
+          s.textContent = ch;
+          c.appendChild(s);
+          stops.push(s);
+        });
+      });
+    }
+
+    stops.forEach(function (s, i) {
+      var col = gradRamp(stops.length < 2 ? 0.5 : i / (stops.length - 1));
+      s.style.color = col;
+      s.style.webkitTextFillColor = col;
+    });
+  }
+
+  /* ============================================================
+     Preloader
+     ============================================================ */
+  var loader = document.getElementById("loader");
+  var curtain = document.getElementById("curtain");
+  var lMark = document.getElementById("lMark");
+  var lBar = document.getElementById("lBar");
+  var lPct = document.getElementById("lPct");
+  var lStatus = document.getElementById("lStatus");
+  var statusText = ["Booting inventory…", "Calibrating drivers…", "Charging cells…", "Ready."];
+
+  "YS STORE".split("").forEach(function (ch) {
+    var s = document.createElement("span");
+    s.textContent = ch === " " ? " " : ch;
+    lMark.appendChild(s);
+  });
+
+  document.body.classList.add("is-locked");
+
+  var counter = { v: 0 };
+  var introTL = gsap.timeline({ onComplete: startSite });
+
+  introTL
+    .to(lMark.children, { y: 0, opacity: 1, duration: 0.9, stagger: 0.045, ease: "expo.out" })
+    .to("#lTag", { opacity: 1, duration: 0.6 }, "-=0.5")
+    .to(counter, {
+      v: 100,
+      duration: reduced ? 0.4 : 1.9,
+      ease: "power2.inOut",
+      onUpdate: function () {
+        var v = Math.round(counter.v);
+        lPct.textContent = v + "%";
+        lStatus.textContent = statusText[Math.min(3, Math.floor(v / 26))];
+      }
+    }, 0.35)
+    .to(lBar, { scaleX: 1, duration: reduced ? 0.4 : 1.9, ease: "power2.inOut" }, 0.35)
+    .to(".l-inner", { y: -26, opacity: 0, duration: 0.6, ease: "power2.in" }, "+=0.15")
+    .set(loader, { display: "none" })
+    .fromTo(curtain, { y: "100%" }, { y: "0%", duration: 0.7, ease: "expo.inOut" }, "-=0.45")
+    .to(curtain, { y: "-100%", duration: 0.8, ease: "expo.inOut" })
+    .set(curtain, { display: "none" });
+
+  /* ============================================================
+     Custom cursor
+     ============================================================ */
+  if (!isTouch) {
+    var dot = document.getElementById("cDot");
+    var ring = document.getElementById("cRing");
+    var cLabel = document.getElementById("cLabel");
+    var xDot = gsap.quickTo(dot, "x", { duration: 0.14, ease: "power3" });
+    var yDot = gsap.quickTo(dot, "y", { duration: 0.14, ease: "power3" });
+    var xRing = gsap.quickTo(ring, "x", { duration: 0.5, ease: "power3" });
+    var yRing = gsap.quickTo(ring, "y", { duration: 0.5, ease: "power3" });
+
+    window.addEventListener("mousemove", function (e) {
+      xDot(e.clientX); yDot(e.clientY);
+      xRing(e.clientX); yRing(e.clientY);
+    });
+
+    document.querySelectorAll("[data-cursor]").forEach(function (el) {
+      el.addEventListener("mouseenter", function () {
+        cLabel.textContent = el.getAttribute("data-cursor");
+        gsap.to(ring, { scale: 2.2, borderColor: "rgba(255,255,255,.9)", duration: 0.4 });
+        gsap.to(cLabel, { opacity: 1, duration: 0.3 });
+        gsap.to(dot, { scale: 0, duration: 0.3 });
+      });
+      el.addEventListener("mouseleave", function () {
+        gsap.to(ring, { scale: 1, borderColor: "rgba(255,255,255,.55)", duration: 0.4 });
+        gsap.to(cLabel, { opacity: 0, duration: 0.2 });
+        gsap.to(dot, { scale: 1, duration: 0.3 });
+      });
+    });
+
+    document.querySelectorAll("a, button").forEach(function (el) {
+      if (el.hasAttribute("data-cursor")) return;
+      el.addEventListener("mouseenter", function () { gsap.to(ring, { scale: 1.6, duration: 0.35 }); });
+      el.addEventListener("mouseleave", function () { gsap.to(ring, { scale: 1, duration: 0.35 }); });
+    });
+
+    window.addEventListener("mousedown", function () { gsap.to(ring, { scale: 0.75, duration: 0.2 }); });
+    window.addEventListener("mouseup", function () { gsap.to(ring, { scale: 1, duration: 0.3 }); });
+  }
+
+  /* ============================================================
+     Magnetic buttons
+     ============================================================ */
+  if (!isTouch) {
+    document.querySelectorAll("[data-magnet]").forEach(function (el) {
+      var xTo = gsap.quickTo(el, "x", { duration: 0.55, ease: "elastic.out(1,0.4)" });
+      var yTo = gsap.quickTo(el, "y", { duration: 0.55, ease: "elastic.out(1,0.4)" });
+      el.addEventListener("mousemove", function (e) {
+        var r = el.getBoundingClientRect();
+        xTo((e.clientX - (r.left + r.width / 2)) * 0.36);
+        yTo((e.clientY - (r.top + r.height / 2)) * 0.5);
+      });
+      el.addEventListener("mouseleave", function () { xTo(0); yTo(0); });
+    });
+  }
+
+  /* ============================================================
+     Pointer-follow glow on cards
+     ============================================================ */
+  document.querySelectorAll(".cat, .feat").forEach(function (el) {
+    el.addEventListener("mousemove", function (e) {
+      var r = el.getBoundingClientRect();
+      el.style.setProperty("--mx", (e.clientX - r.left) + "px");
+      el.style.setProperty("--my", (e.clientY - r.top) + "px");
+    });
+  });
+
+  /* ============================================================
+     3D tilt
+     ============================================================ */
+  if (!isTouch && !reduced) {
+    document.querySelectorAll("[data-tilt]").forEach(function (el) {
+      var rx = gsap.quickTo(el, "rotationX", { duration: 0.6, ease: "power3" });
+      var ry = gsap.quickTo(el, "rotationY", { duration: 0.6, ease: "power3" });
+      gsap.set(el, { transformPerspective: 900, transformStyle: "preserve-3d" });
+      el.addEventListener("mousemove", function (e) {
+        var r = el.getBoundingClientRect();
+        ry(((e.clientX - (r.left + r.width / 2)) / r.width) * 14);
+        rx((-(e.clientY - (r.top + r.height / 2)) / r.height) * 14);
+      });
+      el.addEventListener("mouseleave", function () { rx(0); ry(0); });
+    });
+  }
+
+  /* ============================================================
+     Background particle canvas
+     ============================================================ */
+  (function particles() {
+    var cv = document.getElementById("fx-canvas");
+    var ctx = cv.getContext("2d");
+    var dots = [];
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var colors = ["#00e5ff", "#8b5cf6", "#ff3d81"];
+
+    function resize() {
+      cv.width = window.innerWidth * dpr;
+      cv.height = window.innerHeight * dpr;
+      cv.style.width = window.innerWidth + "px";
+      cv.style.height = window.innerHeight + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      build();
+    }
+    function build() {
+      var count = Math.min(90, Math.round(window.innerWidth / 16));
+      dots = [];
+      for (var i = 0; i < count; i++) {
+        dots.push({
+          x: Math.random() * window.innerWidth,
+          y: Math.random() * window.innerHeight,
+          r: Math.random() * 1.7 + 0.4,
+          vx: (Math.random() - 0.5) * 0.24,
+          vy: (Math.random() - 0.5) * 0.24,
+          a: Math.random() * 0.5 + 0.15,
+          c: colors[(Math.random() * colors.length) | 0]
+        });
+      }
+    }
+    function tick() {
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      for (var i = 0; i < dots.length; i++) {
+        var d = dots[i];
+        d.x += d.vx; d.y += d.vy;
+        if (d.x < 0) d.x = window.innerWidth;
+        if (d.x > window.innerWidth) d.x = 0;
+        if (d.y < 0) d.y = window.innerHeight;
+        if (d.y > window.innerHeight) d.y = 0;
+        ctx.globalAlpha = d.a;
+        ctx.fillStyle = d.c;
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+    resize();
+    window.addEventListener("resize", resize);
+    if (!reduced) gsap.ticker.add(tick); else tick();
+  })();
+
+  /* ============================================================
+     Main site animations — run after preloader
+     ============================================================ */
+  function startSite() {
+    document.body.classList.remove("is-locked");
+    ScrollTrigger.refresh();
+
+    /* ---------- HERO ---------- */
+    var heroTL = gsap.timeline({ defaults: { ease: "expo.out" } });
+
+    document.querySelectorAll(".hero h1 [data-split]").forEach(function (line, i) {
+      var chars = splitChars(line);
+      if (line.classList.contains("l2")) paintGradient(line);
+      heroTL.from(chars, {
+        yPercent: 118,
+        rotationZ: 6,
+        duration: 1.15,
+        stagger: 0.028
+      }, i * 0.12);
+    });
+
+    heroTL
+      .from("[data-hero-fade]", { y: 34, opacity: 0, duration: 1, stagger: 0.11 }, 0.5)
+      .from(".hero-visual .ring", { scale: 0.5, opacity: 0, duration: 1.5, stagger: 0.12 }, 0.2)
+      .from(".hero-device", { scale: 0.72, opacity: 0, rotationZ: -10, duration: 1.6 }, 0.35)
+      .from(".float-card", { y: 40, opacity: 0, scale: 0.85, duration: 1, stagger: 0.14 }, 0.9)
+      .from(".nav-in > *", { y: -26, opacity: 0, duration: 0.9, stagger: 0.09 }, 0.1);
+
+    /* rotating rings */
+    if (!reduced) {
+      document.querySelectorAll("[data-spin]").forEach(function (el) {
+        gsap.to(el, {
+          rotation: 360 * (parseFloat(el.dataset.spin) > 0 ? 1 : -1),
+          duration: Math.abs(parseFloat(el.dataset.spin)),
+          repeat: -1,
+          ease: "none"
+        });
+      });
+      /* floating cards idle bob */
+      document.querySelectorAll("[data-float]").forEach(function (el, i) {
+        gsap.to(el, {
+          y: "+=16",
+          duration: 2.6 + i * 0.45,
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+          delay: i * 0.25
+        });
+      });
+      /* device breathing */
+      gsap.to(".hero-device", { y: -18, duration: 3.4, repeat: -1, yoyo: true, ease: "sine.inOut" });
+      /* auroras drift */
+      gsap.to(".aurora.a1", { x: 90, y: 60, duration: 14, repeat: -1, yoyo: true, ease: "sine.inOut" });
+      gsap.to(".aurora.a2", { x: -80, y: -50, duration: 17, repeat: -1, yoyo: true, ease: "sine.inOut" });
+      gsap.to(".aurora.a3", { x: 60, y: -70, duration: 12, repeat: -1, yoyo: true, ease: "sine.inOut" });
+      /* scroll cue */
+      gsap.fromTo("#cueBar", { yPercent: -100 }, { yPercent: 250, duration: 1.7, repeat: -1, ease: "power2.inOut" });
+    }
+
+    /* hero mouse parallax */
+    if (!isTouch && !reduced) {
+      var hv = document.getElementById("heroVisual");
+      var parEls = [];
+      hv.querySelectorAll("[data-par]").forEach(function (el) {
+        parEls.push({
+          el: el,
+          amt: parseFloat(el.dataset.par),
+          xTo: gsap.quickTo(el, "x", { duration: 0.9, ease: "power3" }),
+          yTo: gsap.quickTo(el, "y", { duration: 0.9, ease: "power3" })
+        });
+      });
+      window.addEventListener("mousemove", function (e) {
+        var dx = e.clientX - window.innerWidth / 2;
+        var dy = e.clientY - window.innerHeight / 2;
+        parEls.forEach(function (p) { p.xTo(dx * p.amt); p.yTo(dy * p.amt); });
+      });
+    }
+
+    /* hero scroll-out */
+    gsap.to(".hero-text", {
+      y: -110, opacity: 0, ease: "none",
+      scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true }
+    });
+    gsap.to(".hero-visual", {
+      y: -190, scale: 0.86, opacity: 0.25, ease: "none",
+      scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true }
+    });
+    gsap.to("#gridBg", {
+      y: 160, ease: "none",
+      scrollTrigger: { trigger: "body", start: "top top", end: "bottom bottom", scrub: true }
+    });
+
+    /* ---------- NAV state + page progress ---------- */
+    ScrollTrigger.create({
+      start: "top -80",
+      end: 99999,
+      onToggle: function (self) { document.getElementById("nav").classList.toggle("stuck", self.isActive); }
+    });
+    gsap.to("#pageProgress", {
+      scaleX: 1, ease: "none",
+      scrollTrigger: { trigger: document.body, start: "top top", end: "bottom bottom", scrub: 0.3 }
+    });
+
+    /* smooth anchor scrolling */
+    document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+      a.addEventListener("click", function (e) {
+        var id = a.getAttribute("href");
+        if (id.length < 2) return;
+        var target = document.querySelector(id);
+        if (!target) return;
+        e.preventDefault();
+        var y = target.getBoundingClientRect().top + window.pageYOffset - 70;
+        if (hasScrollTo && !reduced) {
+          gsap.to(window, { scrollTo: y, duration: 1.1, ease: "power3.inOut", overwrite: true });
+        } else {
+          window.scrollTo({ top: y, behavior: reduced ? "auto" : "smooth" });
+        }
+      });
+    });
+
+    /* ---------- MARQUEE ---------- */
+    (function marquee() {
+      var track = document.getElementById("mqTrack");
+      var item = track.firstElementChild;
+      for (var i = 0; i < 3; i++) track.appendChild(item.cloneNode(true));
+      var w = item.getBoundingClientRect().width + 56;
+      var tween = gsap.to(track, { x: -w, duration: 18, repeat: -1, ease: "none" });
+      if (reduced) { tween.pause(); return; }
+
+      /* scroll velocity boosts speed and flips direction */
+      var dir = 1;
+      ScrollTrigger.create({
+        trigger: ".marquee", start: "top bottom", end: "bottom top",
+        onUpdate: function (self) {
+          var v = self.getVelocity();
+          if (Math.abs(v) < 40) return;
+          dir = v < 0 ? -1 : 1;
+          var boost = gsap.utils.clamp(1, 5, Math.abs(v) / 320 + 1);
+          gsap.killTweensOf(tween);
+          gsap.to(tween, { timeScale: dir * boost, duration: 0.35, ease: "power2.out" });
+          gsap.to(tween, { timeScale: dir, duration: 1.1, delay: 0.4, ease: "power2.out" });
+        }
+      });
+    })();
+
+    /* ---------- GENERIC REVEALS ---------- */
+    document.querySelectorAll("[data-split-lines]").forEach(function (el) {
+      var words = splitWords(el);
+      el.querySelectorAll(".grad").forEach(paintGradient);
+      gsap.from(words, {
+        yPercent: 115,
+        opacity: 0,
+        duration: 1.05,
+        ease: "expo.out",
+        stagger: 0.045,
+        scrollTrigger: { trigger: el, start: "top 88%" }
+      });
+    });
+
+    gsap.utils.toArray("[data-reveal]").forEach(function (el) {
+      gsap.from(el, {
+        y: 38, opacity: 0, duration: 1,
+        scrollTrigger: { trigger: el, start: "top 90%" }
+      });
+    });
+
+    ScrollTrigger.batch("[data-stagger]", {
+      start: "top 88%",
+      onEnter: function (batch) {
+        gsap.from(batch, {
+          y: 66, opacity: 0, scale: 0.96, rotationX: -8,
+          duration: 1.05, ease: "expo.out", stagger: 0.09, clearProps: "transform"
+        });
+      }
+    });
+
+    /* ---------- HORIZONTAL RAIL ---------- */
+    (function rail() {
+      var track = document.getElementById("railTrack");
+      var view = document.getElementById("railView");
+      if (!track) return;
+
+      var getShift = function () { return Math.max(0, track.scrollWidth - window.innerWidth + 40); };
+
+      var st = gsap.to(track, {
+        x: function () { return -getShift(); },
+        ease: "none",
+        scrollTrigger: {
+          trigger: view,
+          start: "top top",
+          end: function () { return "+=" + getShift(); },
+          pin: true,
+          scrub: 1,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          onUpdate: function (self) { gsap.set("#railBar", { scaleX: self.progress }); }
+        }
+      });
+
+      /* per-card entrance while travelling horizontally */
+      gsap.utils.toArray(".card").forEach(function (card) {
+        gsap.from(card, {
+          y: 70, opacity: 0, rotationY: -14, scale: 0.94,
+          duration: 1,
+          ease: "expo.out",
+          scrollTrigger: {
+            trigger: card,
+            containerAnimation: st.scrollTrigger ? st : undefined,
+            start: "left 92%",
+            toggleActions: "play none none reverse"
+          }
+        });
+      });
+    })();
+
+    /* ---------- SPOTLIGHT (pinned scrub disassembly) ---------- */
+    (function spotlight() {
+      var stage = document.querySelector(".spot");
+      if (!stage) return;
+
+      var tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: stage,
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 1
+        }
+      });
+
+      gsap.set(".spot-copy", { opacity: 0, y: 26 });
+      /* pin the rotation origins to the artwork's own centres (viewBox units) */
+      gsap.set("#spCore", { svgOrigin: "200 180" });
+      gsap.set("#spLeft", { svgOrigin: "91 251" });
+      gsap.set("#spRight", { svgOrigin: "309 251" });
+
+      tl.from("#spotDevice", { scale: 0.78, rotationZ: -8, duration: 1 }, 0)
+        .to("#spBand", { y: -132, duration: 1.4 }, 0.5)
+        .to("#spLeft", { x: -150, y: 26, rotationZ: -16, duration: 1.4 }, 0.5)
+        .to("#spRight", { x: 150, y: 26, rotationZ: 16, duration: 1.4 }, 0.5)
+        .to("#spCore", { opacity: 1, scale: 1.12, duration: 1 }, 1.1)
+        .fromTo("#spotWord", { xPercent: 7 }, { xPercent: -7, duration: 3, ease: "none" }, 0)
+        .to(".sc-1", { opacity: 1, y: 0, duration: 0.7 }, 0.9)
+        .to(".sc-2", { opacity: 1, y: 0, duration: 0.7 }, 1.4)
+        .to(".sc-3", { opacity: 1, y: 0, duration: 0.7 }, 1.9)
+        .to("#spotDevice", { rotationY: 16, duration: 2 }, 1.2)
+        .to("#spCore", { rotationZ: 180, duration: 2 }, 1.4);
+
+      gsap.set("#spotDevice", { transformPerspective: 1200 });
+
+      var msgs = ["Scroll to disassemble the YS Aurora Pro.", "Titanium drivers. Six-mic array.", "48 hours of playback per charge.", "Every claim, benchmarked in our lab."];
+      ScrollTrigger.create({
+        trigger: stage, start: "top top", end: "bottom bottom",
+        onUpdate: function (self) {
+          document.getElementById("spotP").textContent = msgs[Math.min(3, Math.floor(self.progress * 4))];
+        }
+      });
+    })();
+
+    /* ---------- COUNTERS ---------- */
+    gsap.utils.toArray("[data-count]").forEach(function (el) {
+      var end = parseFloat(el.dataset.count);
+      var dec = parseInt(el.dataset.decimals || "0", 10);
+      var suffix = el.dataset.suffix || "";
+      var obj = { v: 0 };
+      gsap.to(obj, {
+        v: end,
+        duration: 2.1,
+        ease: "power2.out",
+        scrollTrigger: { trigger: el, start: "top 97%" },
+        onUpdate: function () { el.textContent = obj.v.toFixed(dec) + suffix; }
+      });
+    });
+
+    /* the hero intro shifts elements around while triggers are being created —
+       re-measure once it settles so above-the-fold triggers fire correctly */
+    heroTL.eventCallback("onComplete", function () { ScrollTrigger.refresh(); });
+
+    /* ---------- CTA + FOOTER ---------- */
+    gsap.from(".cta", {
+      scale: 0.94, opacity: 0, duration: 1.2, ease: "expo.out",
+      scrollTrigger: { trigger: ".cta", start: "top 86%" }
+    });
+    gsap.to("#footWord", {
+      backgroundPositionY: "40%", scale: 1.04, ease: "none",
+      scrollTrigger: { trigger: ".foot", start: "top bottom", end: "bottom bottom", scrub: true }
+    });
+    gsap.from("#footWord", {
+      yPercent: 34, opacity: 0, duration: 1.3, ease: "expo.out",
+      scrollTrigger: { trigger: "#footWord", start: "top 96%" }
+    });
+    gsap.from(".foot-top > *", {
+      y: 44, opacity: 0, duration: 1, stagger: 0.1,
+      scrollTrigger: { trigger: ".foot-top", start: "top 88%" }
+    });
+
+    /* ---------- Add to cart ---------- */
+    var cartCount = document.getElementById("cartCount");
+    var count = 0;
+    document.querySelectorAll("[data-add]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        count++;
+        cartCount.textContent = count;
+        gsap.fromTo(cartCount, { scale: 1 }, { scale: 1.6, duration: 0.2, yoyo: true, repeat: 1, ease: "power2.out" });
+        gsap.fromTo(btn, { scale: 1 }, { scale: 0.9, duration: 0.14, yoyo: true, repeat: 1 });
+        var old = btn.textContent;
+        btn.textContent = "Added ✓";
+        gsap.delayedCall(1.3, function () { btn.textContent = old; });
+      });
+    });
+
+    /* ---------- Newsletter ---------- */
+    var form = document.getElementById("subForm");
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var input = document.getElementById("subEmail");
+      var note = document.getElementById("subNote");
+      var ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(input.value.trim());
+      if (!ok) {
+        gsap.fromTo(input, { x: -9 }, { x: 0, duration: 0.55, ease: "elastic.out(1,0.3)" });
+        note.textContent = "That email doesn't look right — try again";
+        gsap.fromTo(note, { opacity: 0 }, { opacity: 1, duration: 0.4, color: "#ff3d81" });
+        return;
+      }
+      note.textContent = "You're on the list — drop 08 lands in your inbox first ✓";
+      gsap.fromTo(note, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.5, color: "#c8ff2f" });
+      gsap.to(form, { opacity: 0.45, duration: 0.4 });
+      input.value = "";
+      input.blur();
+    });
+
+    /* keep everything measured correctly */
+    window.addEventListener("load", function () { ScrollTrigger.refresh(); });
+    var rt;
+    window.addEventListener("resize", function () {
+      clearTimeout(rt);
+      rt = setTimeout(function () { ScrollTrigger.refresh(); }, 220);
+    });
+  }
+})();
+</script>
+</body>
+</html>
