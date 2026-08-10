@@ -1,0 +1,97 @@
+<!--
+  NUQTA — storefront motion
+  For: ys-studios.mykomrz.com  ·  Theme: StepMart (block theme)  ·  v1.0
+  ---------------------------------------------------------------------------
+  PASTE THIS INTO:
+    wp-admin → Site Editor → Patterns → Template parts → my-footer
+      → add a "Custom HTML" block at the very bottom
+      → paste this whole thing in → Save
+
+  A Custom HTML block is the one place a block theme lets you put a <script>
+  without a plugin. Putting it in my-footer means it loads on every page that
+  uses that footer, which is all of them.
+
+  OPTIONAL. The stylesheet is complete on its own — this only adds the
+  entrance animation. If you skip it, nothing is missing and nothing is
+  hidden; the store simply arrives all at once.
+
+  WHAT IT DOES NOT DO — and this is the part that matters:
+    · It never calls preventDefault() on anything.
+    · It never touches an add-to-cart button, a form, a price or a nonce.
+    · It never listens for a click on a WooCommerce control.
+    · It adds and removes exactly one CSS class, on decorative elements only.
+  There is no path through this code that can affect an order.
+-->
+
+<script>
+(function () {
+  'use strict';
+
+  /* Someone who has asked their OS for less motion gets the page, not the
+     show. Checked before anything is marked, so no element is ever hidden
+     for a visitor who will not see it un-hide. */
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  /* IntersectionObserver has been in every browser since 2019, but if it is
+     missing we bail rather than degrade — the CSS only hides an element once
+     this script has marked it, so bailing leaves the store fully visible. */
+  if (!('IntersectionObserver' in window)) return;
+
+  var SELECTORS = [
+    'ul.products > li.product',                        // classic shop grid
+    '.wp-block-woocommerce-product-template > li',     // Product Collection block
+    '.wc-block-grid__product',                         // older Products block
+    '.woocommerce-products-header',
+    '.woocommerce-tabs',
+    '.related.products',
+    '.up-sells'
+  ].join(',');
+
+  function start() {
+    var targets = document.querySelectorAll(SELECTORS);
+    if (!targets.length) return;
+
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+
+        /* Stagger by position within the row, capped so a long archive never
+           makes the last card wait a second and a half to appear. */
+        var delay = Math.min(parseInt(entry.target.dataset.nqIndex || 0, 10), 7) * 55;
+
+        window.setTimeout(function () {
+          entry.target.classList.add('nq-in');
+        }, delay);
+
+        /* Reveal once. Re-animating on scroll-back is the fastest way to make
+           a storefront feel restless. */
+        observer.unobserve(entry.target);
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+
+    Array.prototype.forEach.call(targets, function (el, i) {
+      /* Anything already on screen at load stays visible and is skipped —
+         a card above the fold should not fade in after the page has settled. */
+      var box = el.getBoundingClientRect();
+      if (box.top < window.innerHeight && box.bottom > 0) return;
+
+      el.dataset.nqIndex = i % 8;
+      el.classList.add('nq-reveal');
+      observer.observe(el);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    start();
+  }
+
+  /* WooCommerce Blocks render their grids client-side, so the cards may not
+     exist yet when this first runs. Woo fires this on the document body once
+     a block grid has re-rendered; re-scanning then catches them. */
+  if (window.jQuery) {
+    window.jQuery(document.body).on('wc-blocks_render_blocks_frontend', start);
+  }
+})();
+</script>

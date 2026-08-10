@@ -1,0 +1,886 @@
+/* ==========================================================================
+   NUQTA — storefront style layer
+   For: ys-studios.mykomrz.com  ·  Theme: StepMart (block theme)  ·  v1.0
+   --------------------------------------------------------------------------
+   PASTE THIS INTO:
+     wp-admin → Site Editor → Styles (the half-circle icon, top right)
+       → ⋮ menu inside the Styles panel → Additional CSS
+
+   NOT into the block template code editor. That box holds block markup only.
+
+   TO ROLL BACK: select all in that box, delete, Save. The store returns to
+   exactly how it looks now. Nothing here touches a template, a hook, or a
+   single line of WooCommerce PHP — so add-to-cart, orders, and your Orders /
+   Sales dashboards run on the same code they run on today.
+
+   HOW IT IS ORGANISED
+     §0  Tokens          the only block you need to edit
+     §1  Type
+     §2  Buttons
+     §3  Product grid    classic markup AND WooCommerce Blocks markup
+     §4  Single product
+     §5  Mini-cart drawer
+     §6  Cart & checkout
+     §7  Account, notices, pagination
+     §8  Motion
+
+   Sections are independent. If one misbehaves on your theme, delete that
+   section alone — the rest keeps working.
+   ========================================================================== */
+
+
+/* ==========================================================================
+   §0  TOKENS
+   Everything below is derived from these. To retheme the whole store, change
+   these values and nothing else.
+   ========================================================================== */
+
+:root {
+  /* --- Surfaces -----------------------------------------------------------
+     Light-first, deliberately. NUQTA has twelve products. A dark, dense,
+     neon storefront makes twelve products look like a catalogue someone
+     abandoned halfway; a light one with real air makes the same twelve look
+     curated. Small hardware also photographs better on light neutral ground —
+     which is why every brand selling objects this size does it.
+     To flip the store dark, see the DARK VARIANT block at the bottom. */
+  --nq-paper:      #efefec;   /* page ground — neutral, a hair warm */
+  --nq-card:       #ffffff;   /* product cards, panels, drawers */
+  --nq-card-2:     #f6f6f4;   /* inputs, quiet fills */
+
+  /* --- Ink ---------------------------------------------------------------- */
+  --nq-ink:        #131518;   /* headings, prices, primary text */
+  --nq-graphite:   #575d66;   /* body text, descriptions */
+  --nq-mist:       #8a9098;   /* meta, labels, disabled */
+
+  /* --- Lines -------------------------------------------------------------- */
+  --nq-hairline:   #e4e4df;
+  --nq-hairline-2: #cdcdc6;
+
+  /* --- The point ----------------------------------------------------------
+     نقطة means point. One accent, used at two scales: as small filled dots
+     (stock indicators, bullets, separators) and as button fills. Nothing
+     else on the store gets to be this colour, which is what makes a customer
+     able to find the thing to click without reading. */
+  --nq-point:      #2536d8;
+  --nq-point-hi:   #1a29b4;   /* hover / pressed */
+  --nq-point-ink:  #ffffff;   /* text on top of --nq-point */
+
+  /* --- Semantic -----------------------------------------------------------
+     Kept out of the accent family on purpose: "reduced from" and "sold out"
+     must not look like something to click. */
+  --nq-signal:     #c1341d;   /* sale, error, out of stock */
+  --nq-warn:       #96650a;   /* low stock */
+
+  /* --- Type ---------------------------------------------------------------
+     Archivo and DM Mono are both on Google Fonts, so they install through
+     Site Editor → Styles → Typography → Manage fonts. No plugin needed.
+     Until you install them the stack falls back to your system UI font and
+     the store still looks deliberate — just less specific. */
+  --nq-sans: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --nq-mono: 'DM Mono', ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, monospace;
+
+  /* The new Saudi Riyal sign (U+20C1) is barely a year old and most fonts do
+     not carry it yet — without a fallback it renders as an empty box for a lot
+     of your customers. This stack ends in faces that ship with the glyph. */
+  --nq-currency: var(--nq-mono), 'Noto Sans Symbols 2', 'Segoe UI Symbol', sans-serif;
+
+  /* --- Shape and rhythm --------------------------------------------------- */
+  --nq-radius:     4px;       /* tight. Precision instruments are not pill-shaped. */
+  --nq-radius-lg:  8px;
+  --nq-gap:        clamp(12px, 1.6vw, 22px);
+  --nq-ease:       cubic-bezier(.2, .7, .2, 1);
+  --nq-dur:        .32s;
+}
+
+
+/* ==========================================================================
+   §1  TYPE
+   ========================================================================== */
+
+body.woocommerce,
+body.woocommerce-page,
+body[class*="woocommerce"] {
+  background: var(--nq-paper);
+  color: var(--nq-graphite);
+  font-family: var(--nq-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+body[class*="woocommerce"] h1,
+body[class*="woocommerce"] h2,
+body[class*="woocommerce"] h3,
+body[class*="woocommerce"] .wp-block-post-title {
+  font-family: var(--nq-sans);
+  color: var(--nq-ink);
+  font-weight: 600;
+  letter-spacing: -.022em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+/* Every figure on the store is monospaced and tabular. Prices in a column
+   line up digit for digit, which is the whole reason tabular figures exist
+   and is worth more on a shop than on anything else. */
+body[class*="woocommerce"] .price,
+body[class*="woocommerce"] .woocommerce-Price-amount,
+body[class*="woocommerce"] .wc-block-components-product-price,
+body[class*="woocommerce"] .wc-block-components-formatted-money-amount,
+body[class*="woocommerce"] .wc-block-components-totals-item__value,
+body[class*="woocommerce"] .amount {
+  font-family: var(--nq-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  letter-spacing: -.01em;
+}
+
+body[class*="woocommerce"] .woocommerce-Price-currencySymbol {
+  font-family: var(--nq-currency);
+  font-size: .82em;
+  opacity: .72;
+  margin-inline-end: .12em;
+}
+
+
+/* ==========================================================================
+   §2  BUTTONS
+   Ink fill by default, the point colour on hover. Restrained: on a page of
+   twelve products, twelve saturated buttons is noise.
+   ========================================================================== */
+
+body[class*="woocommerce"] .button,
+body[class*="woocommerce"] .wp-element-button,
+body[class*="woocommerce"] .wp-block-button__link,
+body[class*="woocommerce"] .wc-block-components-button,
+body[class*="woocommerce"] .add_to_cart_button,
+body[class*="woocommerce"] .single_add_to_cart_button,
+body[class*="woocommerce"] button[type="submit"] {
+  font-family: var(--nq-mono);
+  font-size: .74rem;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  line-height: 1;
+  background: var(--nq-ink);
+  color: #fff;
+  border: 1px solid var(--nq-ink);
+  border-radius: var(--nq-radius);
+  padding: .95em 1.5em;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--nq-dur) var(--nq-ease),
+              border-color var(--nq-dur) var(--nq-ease),
+              color var(--nq-dur) var(--nq-ease);
+}
+
+body[class*="woocommerce"] .button:hover,
+body[class*="woocommerce"] .wp-element-button:hover,
+body[class*="woocommerce"] .wp-block-button__link:hover,
+body[class*="woocommerce"] .wc-block-components-button:hover,
+body[class*="woocommerce"] .add_to_cart_button:hover,
+body[class*="woocommerce"] .single_add_to_cart_button:hover,
+body[class*="woocommerce"] button[type="submit"]:hover {
+  background: var(--nq-point);
+  border-color: var(--nq-point);
+  color: var(--nq-point-ink);
+}
+
+/* Secondary: outline only. "View cart", "Continue shopping", "Update cart". */
+body[class*="woocommerce"] .button.wc-backward,
+body[class*="woocommerce"] .added_to_cart,
+body[class*="woocommerce"] .wc-block-components-button.outlined {
+  background: transparent;
+  color: var(--nq-ink);
+  border-color: var(--nq-hairline-2);
+}
+
+body[class*="woocommerce"] .button.wc-backward:hover,
+body[class*="woocommerce"] .added_to_cart:hover {
+  background: transparent;
+  border-color: var(--nq-point);
+  color: var(--nq-point);
+}
+
+/* Keyboard focus has to stay visible — a store is a form, and forms get
+   filled in with the keyboard more often than designers assume. */
+body[class*="woocommerce"] a:focus-visible,
+body[class*="woocommerce"] button:focus-visible,
+body[class*="woocommerce"] input:focus-visible,
+body[class*="woocommerce"] select:focus-visible {
+  outline: 2px solid var(--nq-point);
+  outline-offset: 2px;
+}
+
+
+/* ==========================================================================
+   §3  PRODUCT GRID
+   Two sets of selectors on purpose. WooCommerce renders the shop archive
+   through its legacy template (classic markup: ul.products / li.product) even
+   on a block theme, but any grid you place with the Product Collection block
+   emits the newer wc-block-* markup instead. Covering both means the styling
+   lands wherever the grid actually came from.
+   ========================================================================== */
+
+/* ---- The grid container ------------------------------------------------- */
+body[class*="woocommerce"] ul.products {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: var(--nq-gap);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+body[class*="woocommerce"] ul.products::before,
+body[class*="woocommerce"] ul.products::after {
+  content: none;   /* kills the old float clearfix, which breaks CSS grid */
+}
+
+/* ---- The card ------------------------------------------------------------ */
+body[class*="woocommerce"] ul.products li.product,
+body[class*="woocommerce"] .wc-block-product-template li.product,
+body[class*="woocommerce"] .wp-block-woocommerce-product-template > li,
+body[class*="woocommerce"] .wc-block-grid__product {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--nq-card);
+  border: 1px solid var(--nq-hairline);
+  border-radius: var(--nq-radius-lg);
+  padding: 0 0 16px;
+  margin: 0;
+  overflow: hidden;
+  text-align: start;
+  transition: border-color var(--nq-dur) var(--nq-ease),
+              transform var(--nq-dur) var(--nq-ease);
+}
+
+body[class*="woocommerce"] ul.products li.product:hover,
+body[class*="woocommerce"] .wp-block-woocommerce-product-template > li:hover,
+body[class*="woocommerce"] .wc-block-grid__product:hover {
+  border-color: var(--nq-hairline-2);
+  transform: translateY(-2px);
+}
+
+/* ---- Product image -------------------------------------------------------
+   Square, generous, and on the card's own white rather than the page ground,
+   so a product shot with a white background dissolves into the card instead
+   of sitting in a visible box. */
+body[class*="woocommerce"] ul.products li.product img,
+body[class*="woocommerce"] .wc-block-grid__product-image img,
+body[class*="woocommerce"] .wp-block-woocommerce-product-template .wc-block-components-product-image img {
+  aspect-ratio: 1;
+  object-fit: contain;
+  width: 100%;
+  height: auto;
+  margin: 0 0 14px;
+  padding: 18px;
+  background: var(--nq-card);
+  border-radius: 0;
+  transition: transform .5s var(--nq-ease);
+}
+
+body[class*="woocommerce"] ul.products li.product:hover img {
+  transform: scale(1.04);
+}
+
+/* ---- Card text ----------------------------------------------------------- */
+body[class*="woocommerce"] ul.products li.product > *:not(img):not(.onsale),
+body[class*="woocommerce"] .wp-block-woocommerce-product-template > li > * {
+  padding-inline: 16px;
+}
+
+body[class*="woocommerce"] .woocommerce-loop-product__title,
+body[class*="woocommerce"] .wc-block-grid__product-title,
+body[class*="woocommerce"] .wc-block-components-product-title {
+  font-size: .95rem !important;   /* Woo sets this inline on some themes */
+  font-weight: 600;
+  line-height: 1.32;
+  letter-spacing: -.008em;
+  color: var(--nq-ink);
+  margin: 0 0 6px;
+  padding-top: 0;
+}
+
+body[class*="woocommerce"] ul.products li.product .price {
+  font-size: .95rem;
+  color: var(--nq-ink);
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: .5em;
+  flex-wrap: wrap;
+}
+
+body[class*="woocommerce"] .price del {
+  color: var(--nq-mist);
+  font-size: .84em;
+  text-decoration-thickness: 1px;
+  opacity: 1;
+}
+
+body[class*="woocommerce"] .price ins {
+  text-decoration: none;
+  color: var(--nq-signal);
+  font-weight: 500;
+}
+
+/* ---- Sale badge ---------------------------------------------------------- */
+body[class*="woocommerce"] span.onsale,
+body[class*="woocommerce"] .wc-block-components-product-sale-badge {
+  position: absolute;
+  top: 12px;
+  inset-inline-start: 12px;
+  inset-inline-end: auto;
+  z-index: 2;
+  min-height: 0;
+  min-width: 0;
+  line-height: 1;
+  margin: 0;
+  padding: .45em .6em;
+  background: var(--nq-signal);
+  color: #fff;
+  border: 0;
+  border-radius: var(--nq-radius);
+  font-family: var(--nq-mono);
+  font-size: .62rem;
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+/* ---- Add to cart on the card --------------------------------------------
+   Always visible on touch, where there is no hover to reveal it. On a mouse
+   it fades in — the twelve product photographs are the thing to look at
+   first, not twelve buttons. */
+body[class*="woocommerce"] ul.products li.product .add_to_cart_button,
+body[class*="woocommerce"] ul.products li.product .added_to_cart {
+  margin-top: 12px;
+  align-self: flex-start;
+  font-size: .68rem;
+  padding: .8em 1.15em;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body[class*="woocommerce"] ul.products li.product .add_to_cart_button {
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity var(--nq-dur) var(--nq-ease),
+                transform var(--nq-dur) var(--nq-ease),
+                background var(--nq-dur) var(--nq-ease),
+                border-color var(--nq-dur) var(--nq-ease);
+  }
+
+  body[class*="woocommerce"] ul.products li.product:hover .add_to_cart_button,
+  body[class*="woocommerce"] ul.products li.product:focus-within .add_to_cart_button {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Woo's spinner and tick states, restyled rather than removed — they are the
+   only feedback a customer gets between tapping and the cart updating. */
+body[class*="woocommerce"] .add_to_cart_button.loading {
+  opacity: .55;
+  pointer-events: none;
+}
+
+body[class*="woocommerce"] .add_to_cart_button.added::after {
+  content: " ✓";
+}
+
+/* ---- Archive header and toolbar ------------------------------------------ */
+body[class*="woocommerce"] .woocommerce-products-header__title,
+body[class*="woocommerce"] .woocommerce-products-header h1 {
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  margin-bottom: .4em;
+}
+
+body[class*="woocommerce"] .woocommerce-result-count {
+  font-family: var(--nq-mono);
+  font-size: .72rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--nq-mist);
+  margin: 0;
+}
+
+body[class*="woocommerce"] .woocommerce-ordering select,
+body[class*="woocommerce"] select,
+body[class*="woocommerce"] input[type="text"],
+body[class*="woocommerce"] input[type="email"],
+body[class*="woocommerce"] input[type="tel"],
+body[class*="woocommerce"] input[type="number"],
+body[class*="woocommerce"] input[type="search"],
+body[class*="woocommerce"] textarea,
+body[class*="woocommerce"] .wc-block-components-text-input input {
+  font-family: var(--nq-sans);
+  font-size: max(16px, .92rem);   /* under 16px, iOS zooms the page on focus */
+  color: var(--nq-ink);
+  background: var(--nq-card);
+  border: 1px solid var(--nq-hairline-2);
+  border-radius: var(--nq-radius);
+  padding: .75em .9em;
+  transition: border-color var(--nq-dur) var(--nq-ease);
+}
+
+body[class*="woocommerce"] input:focus,
+body[class*="woocommerce"] select:focus,
+body[class*="woocommerce"] textarea:focus {
+  border-color: var(--nq-point);
+}
+
+
+/* ==========================================================================
+   §4  SINGLE PRODUCT
+   ========================================================================== */
+
+body.single-product .product_title,
+body.single-product .wp-block-post-title {
+  font-size: clamp(1.7rem, 3.6vw, 2.6rem);
+  margin: 0 0 .35em;
+}
+
+body.single-product .summary .price,
+body.single-product .wp-block-woocommerce-product-price {
+  font-size: 1.5rem;
+  color: var(--nq-ink);
+  margin-bottom: 1.2rem;
+}
+
+body.single-product .woocommerce-product-details__short-description {
+  color: var(--nq-graphite);
+  max-width: 58ch;
+  margin-bottom: 1.6rem;
+}
+
+/* ---- Stock, with the dot ------------------------------------------------- */
+body[class*="woocommerce"] .stock {
+  font-family: var(--nq-mono);
+  font-size: .72rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: .5em;
+  margin-bottom: 1rem;
+}
+
+body[class*="woocommerce"] .stock::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+body[class*="woocommerce"] .stock.in-stock      { color: var(--nq-point); }
+body[class*="woocommerce"] .stock.available-on-backorder { color: var(--nq-warn); }
+body[class*="woocommerce"] .stock.out-of-stock  { color: var(--nq-signal); }
+
+/* ---- Quantity ------------------------------------------------------------ */
+body[class*="woocommerce"] .quantity {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--nq-hairline-2);
+  border-radius: var(--nq-radius);
+  overflow: hidden;
+  background: var(--nq-card);
+}
+
+body[class*="woocommerce"] .quantity input.qty {
+  width: 62px;
+  border: 0;
+  background: transparent;
+  text-align: center;
+  font-family: var(--nq-mono);
+  font-variant-numeric: tabular-nums;
+  padding: .8em 0;
+  border-radius: 0;
+}
+
+body[class*="woocommerce"] form.cart {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 1.6rem;
+}
+
+/* A variable product's form is a stack, not a row — the attribute table, then
+   the price, then the buy row. Flex would put those three side by side. */
+body[class*="woocommerce"] form.variations_form.cart {
+  display: block;
+}
+
+body[class*="woocommerce"] .single_add_to_cart_button {
+  flex: 1 1 200px;
+  font-size: .8rem;
+  padding: 1.05em 1.8em;
+  background: var(--nq-point);
+  border-color: var(--nq-point);
+  color: var(--nq-point-ink);
+}
+
+body[class*="woocommerce"] .single_add_to_cart_button:hover {
+  background: var(--nq-point-hi);
+  border-color: var(--nq-point-hi);
+}
+
+/* ---- Meta and tabs ------------------------------------------------------- */
+body[class*="woocommerce"] .product_meta {
+  font-family: var(--nq-mono);
+  font-size: .72rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--nq-mist);
+  border-top: 1px solid var(--nq-hairline);
+  padding-top: 1.2rem;
+  display: grid;
+  gap: .4rem;
+}
+
+body[class*="woocommerce"] .woocommerce-tabs ul.tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0 0 1.8rem;
+  padding: 0;
+  border-bottom: 1px solid var(--nq-hairline);
+}
+
+body[class*="woocommerce"] .woocommerce-tabs ul.tabs::before {
+  content: none;
+}
+
+body[class*="woocommerce"] .woocommerce-tabs ul.tabs li {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  margin: 0;
+  padding: 0;
+}
+
+body[class*="woocommerce"] .woocommerce-tabs ul.tabs li a {
+  display: block;
+  padding: .85em 1.2em;
+  font-family: var(--nq-mono);
+  font-size: .72rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--nq-mist);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  text-decoration: none;
+  transition: color var(--nq-dur) var(--nq-ease),
+              border-color var(--nq-dur) var(--nq-ease);
+}
+
+body[class*="woocommerce"] .woocommerce-tabs ul.tabs li.active a,
+body[class*="woocommerce"] .woocommerce-tabs ul.tabs li a:hover {
+  color: var(--nq-ink);
+  border-bottom-color: var(--nq-point);
+}
+
+body[class*="woocommerce"] .shop_attributes th {
+  font-family: var(--nq-mono);
+  font-size: .72rem;
+  font-weight: 400;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--nq-mist);
+}
+
+
+/* ==========================================================================
+   §5  MINI-CART DRAWER
+   Styling only — the drawer itself is WooCommerce's own Mini-Cart block.
+   Add it once in Site Editor → Patterns → my-header, and you get a real cart
+   drawer with none of the risk of a hand-written one: it reads the live cart,
+   it updates on Woo's own events, and it cannot fall out of step with the
+   totals a customer is about to pay.
+   ========================================================================== */
+
+body[class*="woocommerce"] .wc-block-mini-cart__badge {
+  background: var(--nq-point);
+  color: var(--nq-point-ink);
+  font-family: var(--nq-mono);
+  font-size: .68rem;
+}
+
+body[class*="woocommerce"] .wc-block-mini-cart__drawer .wc-block-components-drawer {
+  background: var(--nq-card);
+}
+
+body[class*="woocommerce"] .wc-block-mini-cart__title {
+  font-family: var(--nq-sans);
+  font-weight: 600;
+  letter-spacing: -.02em;
+  color: var(--nq-ink);
+}
+
+body[class*="woocommerce"] .wc-block-mini-cart__footer {
+  border-top: 1px solid var(--nq-hairline);
+  background: var(--nq-card);
+}
+
+body[class*="woocommerce"] .wc-block-cart-item__wrap .wc-block-components-product-name {
+  font-weight: 600;
+  color: var(--nq-ink);
+  text-decoration: none;
+}
+
+
+/* ==========================================================================
+   §6  CART & CHECKOUT
+   Colour, type and spacing only. No layout is rewritten here, because these
+   two screens are where a broken rule costs an order rather than a compliment.
+   ========================================================================== */
+
+body[class*="woocommerce"] table.shop_table,
+body[class*="woocommerce"] table.cart {
+  border: 0;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+body[class*="woocommerce"] table.shop_table th {
+  font-family: var(--nq-mono);
+  font-size: .7rem;
+  font-weight: 400;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--nq-mist);
+  border-bottom: 1px solid var(--nq-hairline);
+  padding: 0 12px 12px 0;
+  text-align: start;
+}
+
+body[class*="woocommerce"] table.shop_table td {
+  border-top: 0;
+  border-bottom: 1px solid var(--nq-hairline);
+  padding: 16px 12px 16px 0;
+  vertical-align: middle;
+}
+
+body[class*="woocommerce"] table.shop_table img {
+  width: 68px;
+  height: auto;
+  border-radius: var(--nq-radius);
+  background: var(--nq-card);
+}
+
+body[class*="woocommerce"] .cart_totals,
+body[class*="woocommerce"] #order_review,
+body[class*="woocommerce"] .wc-block-components-sidebar {
+  background: var(--nq-card);
+  border: 1px solid var(--nq-hairline);
+  border-radius: var(--nq-radius-lg);
+  padding: clamp(16px, 3vw, 26px);
+}
+
+body[class*="woocommerce"] .cart_totals .order-total .amount,
+body[class*="woocommerce"] .wc-block-components-totals-footer-item .wc-block-components-totals-item__value {
+  font-size: 1.25rem;
+  color: var(--nq-ink);
+}
+
+/* Payment method list — the selected one should be obvious at a glance. */
+body[class*="woocommerce"] #payment ul.payment_methods {
+  list-style: none;
+  display: grid;
+  gap: 8px;
+  margin: 1.2rem 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+body[class*="woocommerce"] #payment ul.payment_methods li {
+  background: var(--nq-card-2);
+  border: 1px solid var(--nq-hairline);
+  border-radius: var(--nq-radius);
+  padding: 14px 16px;
+  transition: border-color var(--nq-dur) var(--nq-ease);
+}
+
+body[class*="woocommerce"] #payment ul.payment_methods li:has(input:checked) {
+  border-color: var(--nq-point);
+}
+
+body[class*="woocommerce"] #payment div.payment_box {
+  background: transparent;
+  border-top: 1px solid var(--nq-hairline);
+  border-radius: 0;
+  margin-top: 12px;
+  padding: 12px 0 0;
+  color: var(--nq-graphite);
+  font-size: .9rem;
+}
+
+body[class*="woocommerce"] #payment div.payment_box::before {
+  content: none;   /* removes Woo's little grey speech-bubble arrow */
+}
+
+body[class*="woocommerce"] #place_order,
+body[class*="woocommerce"] .wc-block-components-checkout-place-order-button {
+  width: 100%;
+  background: var(--nq-point);
+  border-color: var(--nq-point);
+  color: var(--nq-point-ink);
+  font-size: .82rem;
+  padding: 1.1em;
+}
+
+body[class*="woocommerce"] #place_order:hover,
+body[class*="woocommerce"] .wc-block-components-checkout-place-order-button:hover {
+  background: var(--nq-point-hi);
+  border-color: var(--nq-point-hi);
+}
+
+
+/* ==========================================================================
+   §7  ACCOUNT, NOTICES, PAGINATION
+   ========================================================================== */
+
+body[class*="woocommerce"] .woocommerce-MyAccount-navigation ul {
+  list-style: none;
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin: 0 0 2rem;
+  padding: 0;
+  border-bottom: 1px solid var(--nq-hairline);
+}
+
+body[class*="woocommerce"] .woocommerce-MyAccount-navigation li a {
+  display: block;
+  padding: .85em 1.2em;
+  font-family: var(--nq-mono);
+  font-size: .72rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--nq-mist);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  text-decoration: none;
+}
+
+body[class*="woocommerce"] .woocommerce-MyAccount-navigation li.is-active a,
+body[class*="woocommerce"] .woocommerce-MyAccount-navigation li a:hover {
+  color: var(--nq-ink);
+  border-bottom-color: var(--nq-point);
+}
+
+/* Notices. Woo's defaults are a grey bar with a coloured left edge; these read
+   as deliberate and, more importantly, tell the three states apart by colour
+   AND by the dot, so they still separate in greyscale. */
+body[class*="woocommerce"] .woocommerce-message,
+body[class*="woocommerce"] .woocommerce-info,
+body[class*="woocommerce"] .woocommerce-error {
+  background: var(--nq-card);
+  border: 1px solid var(--nq-hairline-2);
+  border-inline-start: 3px solid var(--nq-point);
+  border-radius: var(--nq-radius);
+  color: var(--nq-graphite);
+  font-size: .92rem;
+  padding: 14px 18px;
+  margin-bottom: 1.4rem;
+  list-style: none;
+}
+
+body[class*="woocommerce"] .woocommerce-message::before,
+body[class*="woocommerce"] .woocommerce-info::before,
+body[class*="woocommerce"] .woocommerce-error::before {
+  content: none;
+}
+
+body[class*="woocommerce"] .woocommerce-error {
+  border-inline-start-color: var(--nq-signal);
+}
+
+body[class*="woocommerce"] .woocommerce-pagination ul {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  list-style: none;
+  border: 0;
+  padding: 0;
+  margin: 3rem 0 0;
+}
+
+body[class*="woocommerce"] .woocommerce-pagination ul li {
+  border: 0;
+}
+
+body[class*="woocommerce"] .woocommerce-pagination .page-numbers {
+  display: grid;
+  place-items: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--nq-hairline);
+  border-radius: var(--nq-radius);
+  font-family: var(--nq-mono);
+  font-size: .78rem;
+  color: var(--nq-graphite);
+  background: var(--nq-card);
+  text-decoration: none;
+}
+
+body[class*="woocommerce"] .woocommerce-pagination .page-numbers.current {
+  background: var(--nq-ink);
+  border-color: var(--nq-ink);
+  color: #fff;
+}
+
+
+/* ==========================================================================
+   §8  MOTION
+   One entrance, applied once. The JS block adds `.nq-in` as an element scrolls
+   into view; without the JS these rules never fire and nothing is ever hidden,
+   which is the point — a stylesheet must never be able to leave the store
+   blank on its own.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+  body[class*="woocommerce"] .nq-reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity .6s var(--nq-ease), transform .6s var(--nq-ease);
+  }
+
+  body[class*="woocommerce"] .nq-reveal.nq-in {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+
+/* ==========================================================================
+   DARK VARIANT — optional
+   To flip the whole store dark, uncomment this block. Nothing else changes;
+   every rule above reads from these same tokens.
+
+   My recommendation is to stay light: twelve products fill a light grid and
+   look curated, where a dark one makes a small catalogue read as unfinished.
+   Revisit once NUQTA is past roughly thirty products.
+
+  :root {
+    --nq-paper:      #0e0f12;
+    --nq-card:       #17191e;
+    --nq-card-2:     #1e2127;
+    --nq-ink:        #f2f3f5;
+    --nq-graphite:   #a8afb9;
+    --nq-mist:       #767d88;
+    --nq-hairline:   #262a31;
+    --nq-hairline-2: #363b45;
+    --nq-point:      #5b6cff;
+    --nq-point-hi:   #7482ff;
+    --nq-point-ink:  #080a10;
+    --nq-signal:     #f0705c;
+    --nq-warn:       #e0a94a;
+  }
+
+   ========================================================================== */
