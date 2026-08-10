@@ -1,0 +1,1469 @@
+/* ============================================================================
+   YS STORE — WOOCOMMERCE
+   ----------------------------------------------------------------------------
+   Shop archive, product card, single product, cart drawer, cart page, checkout
+   and account. WooCommerce ships its own stylesheets; inc/assets.php dequeues
+   `woocommerce-general` and `woocommerce-smallscreen` and keeps `woocommerce-
+   layout` off too, so everything a shopper sees is defined here. The one Woo
+   sheet kept is the one for the product gallery's flexslider, which carries
+   behaviour, not just looks.
+   ========================================================================== */
+
+/* ============================================================================
+   SHOP ARCHIVE
+   ========================================================================== */
+
+.ys-shop {
+	padding-top: calc(var(--nav-h) + clamp(2rem, 6vw, 4rem));
+}
+
+.ys-shop__head {
+	margin-bottom: clamp(2rem, 5vw, 3.5rem);
+}
+
+.ys-shop__head h1 {
+	margin: 0.6rem 0;
+}
+
+.woocommerce-breadcrumb {
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--fg-faint);
+}
+
+.woocommerce-breadcrumb a {
+	color: var(--fg-dim);
+}
+
+.woocommerce-breadcrumb a:hover {
+	color: var(--accent);
+}
+
+/* ---- Toolbar: filters left, sort + count right -------------------------- */
+
+.ys-shop__toolbar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+	flex-wrap: wrap;
+	padding-bottom: 1.2rem;
+	margin-bottom: clamp(1.5rem, 4vw, 2.6rem);
+	border-bottom: 1px solid var(--line);
+}
+
+.ys-shop__filters {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.woocommerce-result-count {
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--fg-faint);
+	margin: 0;
+}
+
+.woocommerce-ordering select {
+	width: auto;
+	min-width: 190px;
+	padding-block: 0.6em;
+}
+
+/* ---- The product grid --------------------------------------------------- */
+
+ul.products {
+	list-style: none;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+	gap: clamp(14px, 2vw, 26px);
+	margin: 0;
+	padding: 0;
+}
+
+/* WooCommerce writes `columns-N` on the wrapper; honouring it lets the store
+   owner set the count in the Customiser without touching CSS. */
+ul.products.columns-2 {
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+}
+
+ul.products.columns-5 {
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr));
+}
+
+/* ============================================================================
+   PRODUCT CARD
+   The tile is the primary selling surface, so it does three jobs: it shows the
+   product, it states the price without a hover, and it adds to the cart in one
+   tap. The add button is always present on touch (where there is no hover to
+   reveal it) and slides up on pointer devices.
+   ========================================================================== */
+
+li.product,
+.ys-product-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	border: 1px solid var(--line);
+	border-radius: var(--radius-lg);
+	background: var(--surface-2);
+	overflow: hidden;
+	transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+li.product:hover {
+	border-color: var(--line-strong);
+	transform: translateY(-4px);
+}
+
+.ys-product-card__media {
+	position: relative;
+	aspect-ratio: 1;
+	overflow: hidden;
+	background: var(--surface-3);
+	display: block;
+}
+
+.ys-product-card__media img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform var(--dur-slow) var(--ease), opacity var(--dur) var(--ease);
+}
+
+li.product:hover .ys-product-card__media img {
+	transform: scale(1.05);
+}
+
+/* Second gallery image, cross-faded on hover. Absent for products with a
+   single image, in which case the first image simply stays put. */
+.ys-product-card__media img.ys-alt {
+	position: absolute;
+	inset: 0;
+	opacity: 0;
+}
+
+li.product:hover .ys-product-card__media img.ys-alt {
+	opacity: 1;
+}
+
+.ys-product-card__badges {
+	position: absolute;
+	top: 12px;
+	left: 12px;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 6px;
+	pointer-events: none;
+}
+
+.ys-product-card__body {
+	padding: clamp(14px, 2vw, 20px);
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+	flex: 1;
+}
+
+.ys-product-card__cat {
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--fg-faint);
+}
+
+.ys-product-card__title {
+	font-family: var(--font-body);
+	font-weight: 600;
+	font-size: var(--t-base);
+	line-height: 1.3;
+	letter-spacing: 0;
+	text-transform: none;
+}
+
+/* The stretched link. z-index keeps it below the add-to-cart button so the
+   button still receives its own click. */
+.ys-product-card__title a::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+}
+
+.ys-product-card__rating {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	color: var(--fg-faint);
+}
+
+.ys-product-card__foot {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	margin-top: auto;
+	padding-top: 0.8rem;
+}
+
+/* ---- Price -------------------------------------------------------------- */
+
+.price {
+	font-family: var(--font-mono);
+	font-size: var(--t-base);
+	font-weight: 500;
+	color: var(--fg);
+	display: flex;
+	align-items: baseline;
+	gap: 0.5em;
+	flex-wrap: wrap;
+}
+
+.price del {
+	color: var(--fg-faint);
+	font-size: 0.82em;
+	text-decoration-thickness: 1px;
+}
+
+.price ins {
+	text-decoration: none;
+	color: var(--pink);
+}
+
+.price .woocommerce-Price-currencySymbol {
+	font-size: 0.8em;
+	opacity: 0.8;
+}
+
+/* ---- Add to cart on the card ------------------------------------------- */
+
+.ys-product-card .ys-add {
+	position: relative;
+	z-index: 2;
+	flex: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.ys-product-card__foot .ys-add {
+		opacity: 0;
+		transform: translateY(6px);
+		transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+	}
+
+	li.product:hover .ys-add,
+	li.product:focus-within .ys-add {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* Woo adds `added` / `loading` classes to its own AJAX buttons; mirror them. */
+.ys-add.loading {
+	opacity: 0.6;
+	pointer-events: none;
+}
+
+.ys-add.added::after {
+	content: "✓";
+	margin-left: 0.4em;
+}
+
+/* Woo's "View cart" link after an AJAX add. The drawer replaces it. */
+.added_to_cart {
+	display: none !important;
+}
+
+/* ============================================================================
+   SINGLE PRODUCT
+   ========================================================================== */
+
+.ys-product {
+	padding-top: calc(var(--nav-h) + clamp(1.5rem, 5vw, 3rem));
+}
+
+.ys-product__layout {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: clamp(24px, 5vw, 60px);
+	align-items: start;
+}
+
+@media (min-width: 900px) {
+	.ys-product__layout {
+		grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+	}
+
+	/* The summary column tracks the gallery as it scrolls — the buy button
+	   should never be off screen while a customer is still reading images. */
+	.ys-product__summary {
+		position: sticky;
+		top: calc(var(--nav-h) + 24px);
+	}
+}
+
+.woocommerce-product-gallery {
+	position: relative;
+	border-radius: var(--radius-lg);
+	overflow: hidden;
+	border: 1px solid var(--line);
+	background: var(--surface-2);
+}
+
+.woocommerce-product-gallery__image img {
+	width: 100%;
+	height: auto;
+}
+
+.woocommerce-product-gallery__trigger {
+	position: absolute;
+	top: 14px;
+	right: 14px;
+	z-index: 5;
+	width: 40px;
+	height: 40px;
+	display: grid;
+	place-items: center;
+	border-radius: 50%;
+	background: var(--overlay);
+	border: 1px solid var(--line-strong);
+	backdrop-filter: blur(8px);
+	font-size: 15px;
+	color: var(--fg);
+}
+
+.flex-control-thumbs {
+	list-style: none;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+	gap: 8px;
+	padding: 10px;
+	margin: 0;
+}
+
+.flex-control-thumbs img {
+	border-radius: var(--radius-sm);
+	cursor: pointer;
+	opacity: 0.5;
+	transition: opacity var(--dur-fast) var(--ease);
+	border: 1px solid transparent;
+}
+
+.flex-control-thumbs img:hover,
+.flex-control-thumbs img.flex-active {
+	opacity: 1;
+	border-color: var(--accent);
+}
+
+.ys-product__summary .product_title {
+	font-size: var(--t-2xl);
+	margin: 0.6rem 0 1rem;
+}
+
+.ys-product__summary .price {
+	font-size: var(--t-xl);
+	margin-bottom: 1.2rem;
+}
+
+.woocommerce-product-details__short-description {
+	color: var(--fg-dim);
+	max-width: var(--maxw-text);
+	margin-bottom: 1.6rem;
+}
+
+/* ---- Rating ------------------------------------------------------------- */
+
+.star-rating {
+	position: relative;
+	width: 5.4em;
+	height: 1.2em;
+	font-family: var(--font-mono);
+	font-size: var(--t-sm);
+	line-height: 1.2;
+	overflow: hidden;
+	flex: none;
+	color: var(--amber);
+}
+
+.star-rating::before,
+.star-rating span::before {
+	content: "★★★★★";
+	position: absolute;
+	left: 0;
+	top: 0;
+	letter-spacing: 0.08em;
+}
+
+.star-rating::before {
+	color: var(--fg-faint);
+}
+
+.star-rating span {
+	position: absolute;
+	left: 0;
+	top: 0;
+	overflow: hidden;
+	padding-top: 1.4em;
+	height: 0;
+}
+
+.star-rating span::before {
+	top: 0;
+	padding-top: 0;
+	height: auto;
+}
+
+.woocommerce-product-rating {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 1rem;
+	font-size: var(--t-sm);
+}
+
+.woocommerce-review-link {
+	color: var(--fg-faint);
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+}
+
+/* ---- Quantity ----------------------------------------------------------- */
+
+.quantity {
+	display: inline-flex;
+	align-items: stretch;
+	border: 1px solid var(--line-strong);
+	border-radius: var(--radius-pill);
+	overflow: hidden;
+	background: var(--field-bg);
+	flex: none;
+}
+
+.quantity button {
+	width: 40px;
+	display: grid;
+	place-items: center;
+	color: var(--fg-dim);
+	font-size: 16px;
+	line-height: 1;
+	transition: color var(--dur-fast) var(--ease);
+}
+
+.quantity button:hover {
+	color: var(--accent);
+}
+
+.quantity input.qty {
+	width: 46px;
+	border: 0;
+	background: none;
+	text-align: center;
+	padding: 0.8em 0;
+	font-family: var(--font-mono);
+	font-size: var(--t-sm);
+	-moz-appearance: textfield;
+	appearance: textfield;
+	border-radius: 0;
+}
+
+.quantity input.qty::-webkit-outer-spin-button,
+.quantity input.qty::-webkit-inner-spin-button {
+	appearance: none;
+	margin: 0;
+}
+
+form.cart {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+	margin-bottom: 1.6rem;
+}
+
+form.cart .single_add_to_cart_button {
+	flex: 1 1 220px;
+}
+
+/* A variable product's form is not a single row: it holds the attribute table,
+   a price that changes with the selection, and only then the buy row. Flex
+   would lay those three out side by side. */
+form.variations_form.cart {
+	display: block;
+}
+
+form.variations_form .woocommerce-variation-add-to-cart {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+/* ---- Grouped products --------------------------------------------------- */
+
+form.grouped_form table.woocommerce-grouped-product-list {
+	width: 100%;
+	border-collapse: collapse;
+	margin-bottom: 1.2rem;
+}
+
+form.grouped_form td {
+	padding: 0.8rem 0.5rem 0.8rem 0;
+	border-bottom: 1px solid var(--line);
+	vertical-align: middle;
+}
+
+/* ---- Shop filter widgets ------------------------------------------------- */
+
+.ys-filters {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+	gap: clamp(14px, 2vw, 24px);
+	padding: clamp(16px, 2.5vw, 24px);
+	margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+	border: 1px solid var(--line);
+	border-radius: var(--radius-lg);
+	background: var(--surface-2);
+}
+
+.ys-widget__title {
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	font-weight: 500;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--fg-faint);
+	margin-bottom: 0.9rem;
+}
+
+.ys-widget ul {
+	list-style: none;
+	display: grid;
+	gap: 0.45rem;
+	font-size: var(--t-sm);
+	padding: 0;
+}
+
+.ys-widget a {
+	color: var(--fg-dim);
+	transition: color var(--dur-fast) var(--ease);
+}
+
+.ys-widget a:hover,
+.ys-widget .chosen > a {
+	color: var(--accent);
+}
+
+/* WooCommerce's price slider, which ships unstyled once its own CSS is gone. */
+.ys-widget .price_slider_wrapper .ui-slider {
+	position: relative;
+	height: 4px;
+	border-radius: var(--radius-pill);
+	background: var(--line-strong);
+	margin: 1.2rem 0;
+}
+
+.ys-widget .ui-slider .ui-slider-range {
+	position: absolute;
+	height: 100%;
+	border-radius: var(--radius-pill);
+	background: var(--grad);
+}
+
+.ys-widget .ui-slider .ui-slider-handle {
+	position: absolute;
+	top: 50%;
+	width: 16px;
+	height: 16px;
+	margin-left: -8px;
+	transform: translateY(-50%);
+	border-radius: 50%;
+	background: var(--fg);
+	cursor: grab;
+}
+
+/* ---- Variations --------------------------------------------------------- */
+
+.variations {
+	width: 100%;
+	border-collapse: collapse;
+	margin-bottom: 1rem;
+}
+
+.variations th,
+.variations td {
+	text-align: left;
+	padding: 0.4rem 0;
+	vertical-align: middle;
+}
+
+.variations th {
+	width: 120px;
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--fg-dim);
+	font-weight: 400;
+}
+
+.reset_variations {
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	color: var(--fg-faint);
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+}
+
+.woocommerce-variation-price {
+	margin-bottom: 1rem;
+}
+
+/* ---- Meta / trust ------------------------------------------------------- */
+
+.product_meta {
+	display: grid;
+	gap: 0.4rem;
+	padding-top: 1.4rem;
+	border-top: 1px solid var(--line);
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--fg-faint);
+}
+
+.product_meta a {
+	color: var(--fg-dim);
+}
+
+.product_meta a:hover {
+	color: var(--accent);
+}
+
+.ys-trust {
+	display: grid;
+	gap: 0.7rem;
+	margin: 1.6rem 0;
+	padding: 1.2rem;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: var(--surface-2);
+}
+
+.ys-trust li {
+	display: flex;
+	gap: 0.6rem;
+	align-items: center;
+	font-size: var(--t-sm);
+	color: var(--fg-dim);
+	list-style: none;
+}
+
+.ys-trust li::before {
+	content: "";
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--accent);
+	flex: none;
+}
+
+.ys-stock {
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+}
+
+.ys-stock--in {
+	color: var(--ok);
+}
+
+.ys-stock--low {
+	color: var(--warn);
+}
+
+.ys-stock--out {
+	color: var(--danger);
+}
+
+/* ---- Tabs --------------------------------------------------------------- */
+
+.woocommerce-tabs {
+	margin-top: clamp(3rem, 8vw, 6rem);
+}
+
+.woocommerce-tabs ul.tabs {
+	list-style: none;
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+	border-bottom: 1px solid var(--line);
+	margin-bottom: 2rem;
+	padding: 0;
+}
+
+.woocommerce-tabs ul.tabs li a {
+	display: block;
+	padding: 0.9em 1.4em;
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--fg-faint);
+	border-bottom: 2px solid transparent;
+	margin-bottom: -1px;
+	transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+
+.woocommerce-tabs ul.tabs li.active a,
+.woocommerce-tabs ul.tabs li a:hover {
+	color: var(--fg);
+	border-bottom-color: var(--accent);
+}
+
+.woocommerce-Tabs-panel {
+	color: var(--fg-dim);
+	max-width: var(--maxw-text);
+}
+
+.woocommerce-Tabs-panel h2 {
+	font-size: var(--t-lg);
+	margin-bottom: 1rem;
+	color: var(--fg);
+}
+
+.shop_attributes {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: var(--t-sm);
+}
+
+.shop_attributes th,
+.shop_attributes td {
+	padding: 0.7rem 0;
+	border-bottom: 1px solid var(--line);
+	text-align: left;
+}
+
+.shop_attributes th {
+	color: var(--fg-faint);
+	font-weight: 400;
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+	width: 40%;
+}
+
+/* ---- Reviews ------------------------------------------------------------ */
+
+.commentlist {
+	list-style: none;
+	display: grid;
+	gap: 1rem;
+	padding: 0;
+	margin-bottom: 2.5rem;
+}
+
+.commentlist .comment_container {
+	display: flex;
+	gap: 1rem;
+	padding: 1.2rem;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: var(--surface-2);
+}
+
+.commentlist img.avatar {
+	width: 44px;
+	height: 44px;
+	border-radius: 50%;
+	flex: none;
+}
+
+.comment-form-rating p.stars a {
+	color: var(--amber);
+	font-size: 1.1rem;
+}
+
+/* ---- Upsells / related -------------------------------------------------- */
+
+.up-sells,
+.related,
+.cross-sells {
+	margin-top: clamp(3rem, 8vw, 6rem);
+}
+
+.up-sells > h2,
+.related > h2,
+.cross-sells > h2 {
+	font-size: var(--t-xl);
+	margin-bottom: 1.8rem;
+}
+
+/* ---- Archive pagination -------------------------------------------------
+   Woo prints `.woocommerce-pagination`; the theme's own loops print
+   `.ys-pagination`. Same look, so the rules are shared. */
+
+.woocommerce-pagination ul.page-numbers {
+	display: flex;
+	justify-content: center;
+	gap: 8px;
+	list-style: none;
+	flex-wrap: wrap;
+	margin-top: clamp(2.5rem, 6vw, 4rem);
+	padding: 0;
+}
+
+.woocommerce-pagination .page-numbers {
+	min-width: 42px;
+	height: 42px;
+	padding: 0 12px;
+	display: grid;
+	place-items: center;
+	border: 1px solid var(--line);
+	border-radius: var(--radius-sm);
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	color: var(--fg-dim);
+	transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+
+.woocommerce-pagination li .page-numbers:hover {
+	border-color: var(--accent);
+	color: var(--accent);
+}
+
+.woocommerce-pagination .page-numbers.current {
+	background: var(--fg);
+	border-color: var(--fg);
+	color: var(--surface);
+}
+
+/* ============================================================================
+   CART DRAWER
+   The Solis pattern: one panel that carries the cart and the route to
+   checkout, so a customer never loses the page they were browsing. Rendered by
+   template-parts/cart-drawer.php and refreshed through Woo's fragment API.
+   ========================================================================== */
+
+.ys-drawer {
+	position: fixed;
+	inset: 0;
+	z-index: var(--z-drawer);
+	visibility: hidden;
+	pointer-events: none;
+}
+
+.ys-drawer.is-open {
+	visibility: visible;
+	pointer-events: auto;
+}
+
+.ys-drawer__scrim {
+	position: absolute;
+	inset: 0;
+	background: rgba(3, 4, 8, 0.66);
+	backdrop-filter: blur(3px);
+	opacity: 0;
+	transition: opacity var(--dur) var(--ease);
+}
+
+.ys-drawer.is-open .ys-drawer__scrim {
+	opacity: 1;
+}
+
+.ys-drawer__panel {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: min(430px, 100%);
+	background: var(--deep);
+	border-left: 1px solid var(--line);
+	display: flex;
+	flex-direction: column;
+	transform: translateX(100%);
+	transition: transform var(--dur-slow) var(--ease);
+	box-shadow: -30px 0 80px -40px #000;
+}
+
+.ys-drawer.is-open .ys-drawer__panel {
+	transform: translateX(0);
+}
+
+.ys-drawer__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 1.3rem var(--gutter);
+	border-bottom: 1px solid var(--line);
+	flex: none;
+}
+
+.ys-drawer__head h2 {
+	font-size: var(--t-lg);
+}
+
+.ys-drawer__body {
+	flex: 1;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	padding: 1.3rem var(--gutter);
+}
+
+.ys-drawer__foot {
+	flex: none;
+	padding: 1.3rem var(--gutter) calc(1.3rem + env(safe-area-inset-bottom));
+	border-top: 1px solid var(--line);
+	background: var(--panel);
+	display: grid;
+	gap: 0.9rem;
+}
+
+/* ---- Line items --------------------------------------------------------- */
+
+.ys-line {
+	display: grid;
+	grid-template-columns: 76px 1fr auto;
+	gap: 0.9rem;
+	padding-bottom: 1.1rem;
+	margin-bottom: 1.1rem;
+	border-bottom: 1px solid var(--line);
+	align-items: start;
+}
+
+.ys-line:last-child {
+	border-bottom: 0;
+	margin-bottom: 0;
+}
+
+.ys-line__media {
+	aspect-ratio: 1;
+	border-radius: var(--radius-sm);
+	overflow: hidden;
+	background: var(--surface-3);
+}
+
+.ys-line__media img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.ys-line__name {
+	font-weight: 600;
+	font-size: var(--t-sm);
+	line-height: 1.3;
+	display: block;
+}
+
+.ys-line__variation {
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	color: var(--fg-faint);
+	margin-top: 0.25rem;
+}
+
+.ys-line__price {
+	font-family: var(--font-mono);
+	font-size: var(--t-sm);
+	text-align: right;
+	white-space: nowrap;
+}
+
+.ys-line__controls {
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+	margin-top: 0.6rem;
+}
+
+.ys-line__remove {
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--fg-faint);
+	transition: color var(--dur-fast) var(--ease);
+}
+
+.ys-line__remove:hover {
+	color: var(--danger);
+}
+
+/* ---- Totals ------------------------------------------------------------- */
+
+.ys-drawer__row {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 1rem;
+	font-family: var(--font-mono);
+	font-size: var(--t-sm);
+}
+
+.ys-drawer__row--total {
+	font-size: var(--t-lg);
+	color: var(--fg);
+	padding-top: 0.6rem;
+	border-top: 1px solid var(--line);
+}
+
+.ys-drawer__row span:first-child {
+	color: var(--fg-dim);
+	font-size: var(--t-xs);
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+}
+
+/* Progress toward free shipping. A concrete, non-manipulative nudge: it states
+   a real threshold from the store's own shipping settings. */
+.ys-freeship {
+	display: grid;
+	gap: 0.5rem;
+	padding: 0.9rem 1rem;
+	border-radius: var(--radius);
+	background: var(--surface-2);
+	border: 1px solid var(--line);
+	font-size: var(--t-xs);
+	color: var(--fg-dim);
+}
+
+.ys-freeship__bar {
+	height: 4px;
+	border-radius: var(--radius-pill);
+	background: var(--line-strong);
+	overflow: hidden;
+}
+
+.ys-freeship__bar i {
+	display: block;
+	height: 100%;
+	background: var(--grad);
+	transition: width var(--dur-slow) var(--ease);
+}
+
+.ys-drawer__empty {
+	display: grid;
+	gap: 1.2rem;
+	place-items: center;
+	text-align: center;
+	padding: 3rem 0;
+	color: var(--fg-dim);
+}
+
+/* ============================================================================
+   CART PAGE
+   ========================================================================== */
+
+.ys-cart {
+	padding-top: calc(var(--nav-h) + clamp(2rem, 6vw, 4rem));
+}
+
+.ys-cart__layout {
+	display: grid;
+	gap: clamp(24px, 4vw, 44px);
+	align-items: start;
+}
+
+@media (min-width: 900px) {
+	.ys-cart__layout {
+		grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.9fr);
+	}
+
+	.cart-collaterals {
+		position: sticky;
+		top: calc(var(--nav-h) + 24px);
+	}
+}
+
+table.shop_table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: var(--t-sm);
+}
+
+table.shop_table th {
+	text-align: left;
+	padding: 0 0 1rem;
+	border-bottom: 1px solid var(--line);
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	font-weight: 400;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--fg-faint);
+}
+
+table.shop_table td {
+	padding: 1.1rem 0;
+	border-bottom: 1px solid var(--line);
+	vertical-align: middle;
+}
+
+table.shop_table .product-thumbnail img {
+	width: 72px;
+	border-radius: var(--radius-sm);
+}
+
+table.shop_table .product-remove a {
+	display: grid;
+	place-items: center;
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	border: 1px solid var(--line);
+	color: var(--fg-faint);
+	font-size: 14px;
+	line-height: 1;
+}
+
+table.shop_table .product-remove a:hover {
+	border-color: var(--danger);
+	color: var(--danger);
+}
+
+.cart_totals {
+	padding: clamp(18px, 3vw, 28px);
+	border: 1px solid var(--line);
+	border-radius: var(--radius-lg);
+	background: var(--surface-2);
+}
+
+.cart_totals h2 {
+	font-size: var(--t-lg);
+	margin-bottom: 1.2rem;
+}
+
+.cart_totals table {
+	width: 100%;
+	font-size: var(--t-sm);
+}
+
+.cart_totals th {
+	text-align: left;
+	font-weight: 400;
+	color: var(--fg-dim);
+	padding: 0.6rem 0;
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+}
+
+.cart_totals td {
+	text-align: right;
+	padding: 0.6rem 0;
+	font-family: var(--font-mono);
+}
+
+.cart_totals .order-total {
+	font-size: var(--t-lg);
+}
+
+.coupon {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+	margin-bottom: 1.5rem;
+}
+
+.coupon input {
+	flex: 1 1 160px;
+}
+
+/* ============================================================================
+   CHECKOUT
+   The one screen where the motion layer stands down. Nothing here fades in on
+   scroll and nothing waits on a timeline: a customer with their card out
+   should never be looking at an element that has not arrived yet.
+   ========================================================================== */
+
+.ys-checkout {
+	padding-top: calc(var(--nav-h) + clamp(2rem, 6vw, 4rem));
+}
+
+.ys-checkout__steps {
+	display: flex;
+	gap: 1.4rem;
+	flex-wrap: wrap;
+	margin-bottom: clamp(2rem, 5vw, 3rem);
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--fg-faint);
+}
+
+.ys-checkout__steps .is-current {
+	color: var(--accent);
+}
+
+.ys-checkout__steps .is-current::before {
+	content: "→ ";
+}
+
+form.checkout {
+	display: grid;
+	gap: clamp(24px, 4vw, 44px);
+	align-items: start;
+}
+
+@media (min-width: 900px) {
+	form.checkout {
+		grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+	}
+
+	#order_review_heading,
+	#order_review {
+		grid-column: 2;
+	}
+
+	#customer_details {
+		grid-column: 1;
+		grid-row: 1 / span 2;
+	}
+}
+
+#order_review {
+	padding: clamp(18px, 3vw, 28px);
+	border: 1px solid var(--line);
+	border-radius: var(--radius-lg);
+	background: var(--surface-2);
+}
+
+.woocommerce-billing-fields h3,
+.woocommerce-shipping-fields h3,
+.woocommerce-additional-fields h3,
+#order_review_heading {
+	font-size: var(--t-lg);
+	margin-bottom: 1.2rem;
+}
+
+.form-row {
+	margin-bottom: 1rem;
+}
+
+.form-row-first,
+.form-row-last {
+	display: inline-block;
+	width: calc(50% - 6px);
+	vertical-align: top;
+}
+
+.form-row-first {
+	margin-right: 8px;
+}
+
+.required {
+	color: var(--pink);
+	text-decoration: none;
+}
+
+.woocommerce-input-wrapper {
+	display: block;
+}
+
+#payment ul.payment_methods {
+	list-style: none;
+	display: grid;
+	gap: 8px;
+	padding: 0;
+	margin: 1.2rem 0;
+}
+
+#payment ul.payment_methods li {
+	padding: 1rem;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	background: var(--field-bg);
+	transition: border-color var(--dur-fast) var(--ease);
+}
+
+#payment ul.payment_methods li:has(input:checked) {
+	border-color: var(--accent);
+}
+
+#payment ul.payment_methods label {
+	display: inline;
+	font-family: var(--font-body);
+	font-size: var(--t-sm);
+	text-transform: none;
+	letter-spacing: 0;
+	color: var(--fg);
+	margin: 0;
+}
+
+.payment_box {
+	margin-top: 0.8rem;
+	padding-top: 0.8rem;
+	border-top: 1px solid var(--line);
+	font-size: var(--t-sm);
+	color: var(--fg-dim);
+}
+
+#place_order {
+	width: 100%;
+	margin-top: 1rem;
+}
+
+.woocommerce-terms-and-conditions-wrapper {
+	font-size: var(--t-sm);
+	color: var(--fg-dim);
+	margin: 1rem 0;
+}
+
+/* Woo's blocking overlay during checkout validation. */
+.blockUI.blockOverlay {
+	background: var(--overlay) !important;
+	opacity: 1 !important;
+}
+
+/* ============================================================================
+   ORDER RECEIVED / ACCOUNT
+   ========================================================================== */
+
+.woocommerce-order,
+.woocommerce-account .woocommerce {
+	padding-top: calc(var(--nav-h) + clamp(2rem, 6vw, 4rem));
+}
+
+.woocommerce-thankyou-order-details {
+	list-style: none;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+	gap: 1px;
+	background: var(--line);
+	border: 1px solid var(--line);
+	border-radius: var(--radius-lg);
+	overflow: hidden;
+	padding: 0;
+	margin: 2rem 0;
+}
+
+.woocommerce-thankyou-order-details li {
+	background: var(--surface-2);
+	padding: 1.2rem;
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--fg-faint);
+}
+
+.woocommerce-thankyou-order-details li strong {
+	display: block;
+	margin-top: 0.5rem;
+	font-size: var(--t-base);
+	letter-spacing: 0;
+	text-transform: none;
+	color: var(--fg);
+}
+
+.woocommerce-MyAccount-navigation ul {
+	list-style: none;
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+	padding: 0;
+	margin-bottom: 2rem;
+	border-bottom: 1px solid var(--line);
+}
+
+.woocommerce-MyAccount-navigation a {
+	display: block;
+	padding: 0.8em 1.2em;
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--fg-faint);
+	border-bottom: 2px solid transparent;
+	margin-bottom: -1px;
+}
+
+.woocommerce-MyAccount-navigation .is-active a,
+.woocommerce-MyAccount-navigation a:hover {
+	color: var(--fg);
+	border-bottom-color: var(--accent);
+}
+
+/* ============================================================================
+   WOOCOMMERCE MESSAGES
+   ========================================================================== */
+
+.woocommerce-message,
+.woocommerce-info,
+.woocommerce-error {
+	list-style: none;
+	padding: 1rem 1.2rem;
+	border-radius: var(--radius);
+	border: 1px solid var(--line-strong);
+	background: var(--surface-2);
+	font-size: var(--t-sm);
+	margin-bottom: 1.4rem;
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	flex-wrap: wrap;
+}
+
+.woocommerce-message {
+	border-color: color-mix(in srgb, var(--ok) 45%, transparent);
+}
+
+.woocommerce-error {
+	border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.woocommerce-message .button,
+.woocommerce-info .button {
+	margin-left: auto;
+}
+
+/* Woo prints raw `.button` elements in places a template cannot reach
+   (payment gateways, plugin notices). Give them the house look. */
+.woocommerce .button:not(.btn),
+.woocommerce-page .button:not(.btn),
+button.button:not(.btn),
+input.button:not(.btn),
+a.button:not(.btn) {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.6em;
+	padding: 0.95em 1.7em;
+	border-radius: var(--radius-pill);
+	background: var(--grad);
+	color: #04060b;
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	font-weight: 700;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	line-height: 1;
+	border: 0;
+	cursor: pointer;
+	transition: filter var(--dur-fast) var(--ease);
+}
+
+.woocommerce .button:not(.btn):hover,
+button.button:not(.btn):hover,
+input.button:not(.btn):hover,
+a.button:not(.btn):hover {
+	filter: brightness(1.12);
+}

@@ -1,0 +1,195 @@
+/* ============================================================================
+   YS STORE — ANIMATIONS
+   ----------------------------------------------------------------------------
+   This layer holds only the *starting* states that GSAP tweens away from, plus
+   the handful of effects that are cheaper as pure CSS.
+
+   The contract with app.js: a `[data-anim]` element is invisible ONLY while
+   `html` carries `.ys-js`. That class is written by an inline script in
+   header.php before first paint, so a visitor with JS sees no flash, and a
+   visitor without JS — or one whose bundle fails — sees the full page rather
+   than a blank one. Dequeue this file and the site still works; it just
+   arrives all at once.
+   ========================================================================== */
+
+.ys-js [data-anim] {
+	opacity: 0;
+	will-change: transform, opacity;
+}
+
+.ys-js [data-anim="up"] {
+	transform: translateY(38px);
+}
+
+.ys-js [data-anim="down"] {
+	transform: translateY(-30px);
+}
+
+.ys-js [data-anim="left"] {
+	transform: translateX(40px);
+}
+
+.ys-js [data-anim="right"] {
+	transform: translateX(-40px);
+}
+
+.ys-js [data-anim="scale"] {
+	transform: scale(0.94);
+}
+
+.ys-js [data-anim="clip"] {
+	opacity: 1;
+	clip-path: inset(0 0 100% 0);
+}
+
+/* Once a trigger has fired, app.js sets .is-in and clears the inline transform.
+   The class is what CSS-only fallbacks key off. */
+[data-anim].is-in {
+	opacity: 1;
+}
+
+/* Cart and checkout. `ys-no-reveal` is set server-side by ys_store_body_classes,
+   so the opt-out applies from the first paint rather than waiting for app.js to
+   read it — a customer part-way through paying should never see a frame of
+   hidden content, however brief. */
+.ys-js body.ys-no-reveal [data-anim] {
+	opacity: 1;
+	transform: none;
+	clip-path: none;
+}
+
+/* ---- Split text ---------------------------------------------------------
+   app.js wraps each line/word/char in `.ys-line > .ys-word > .ys-char`. The
+   line is the mask, so a character rises out of nothing rather than sliding
+   over the element above it. */
+
+.ys-line {
+	display: block;
+	overflow: hidden;
+	/* Descenders (g, y, p) get clipped by a tight overflow box; the padding
+	   buys them room and the negative margin gives the space back. */
+	padding-bottom: 0.12em;
+	margin-bottom: -0.12em;
+}
+
+.ys-word {
+	display: inline-block;
+	white-space: nowrap;
+}
+
+.ys-char {
+	display: inline-block;
+	will-change: transform;
+}
+
+.ys-js .ys-split .ys-char,
+.ys-js .ys-split .ys-word {
+	transform: translateY(105%);
+}
+
+/* ---- Marquee ------------------------------------------------------------
+   CSS handles the default scroll so the ticker moves even if GSAP never
+   loads; app.js takes it over to add scroll-velocity skew where supported. */
+
+.ys-marquee__track {
+	animation: ys-marquee 26s linear infinite;
+}
+
+.ys-marquee--reverse .ys-marquee__track {
+	animation-direction: reverse;
+}
+
+.ys-marquee:hover .ys-marquee__track {
+	animation-play-state: paused;
+}
+
+/* GSAP sets this once it owns the transform. */
+.ys-marquee__track.is-driven {
+	animation: none;
+}
+
+@keyframes ys-marquee {
+	to {
+		transform: translateX(-50%);
+	}
+}
+
+/* ---- Ambient ------------------------------------------------------------ */
+
+@keyframes ys-float {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-12px);
+	}
+}
+
+@keyframes ys-pulse {
+	0%,
+	100% {
+		opacity: 0.4;
+	}
+	50% {
+		opacity: 1;
+	}
+}
+
+.ys-float {
+	animation: ys-float 6s ease-in-out infinite;
+}
+
+.ys-pulse {
+	animation: ys-pulse 2.4s ease-in-out infinite;
+}
+
+/* The conic ring from My-Portfolio's monogram, used on the hero badge and the
+   loading state of the insights widget. */
+.ys-ring {
+	position: relative;
+	display: grid;
+	place-items: center;
+	border-radius: 50%;
+	isolation: isolate;
+}
+
+.ys-ring::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: 50%;
+	background: conic-gradient(from 0deg, var(--cyan), var(--violet), var(--pink), var(--cyan));
+	-webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 0);
+	mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 0);
+	animation: ys-spin-slow 9s linear infinite;
+	z-index: -1;
+}
+
+@keyframes ys-spin-slow {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* ---- Reduced motion -----------------------------------------------------
+   Everything above reduces to "already there". app.js checks the same query
+   before it builds a single timeline, so this is belt and braces for the CSS
+   half only. */
+
+@media (prefers-reduced-motion: reduce) {
+	.ys-js [data-anim],
+	.ys-js .ys-split .ys-char,
+	.ys-js .ys-split .ys-word {
+		opacity: 1 !important;
+		transform: none !important;
+		clip-path: none !important;
+	}
+
+	.ys-marquee__track,
+	.ys-float,
+	.ys-pulse,
+	.ys-ring::before {
+		animation: none !important;
+	}
+}

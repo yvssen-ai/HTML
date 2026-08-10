@@ -1,0 +1,452 @@
+/* ============================================================================
+   YS STORE — BASE
+   Reset, typography, layout primitives, forms, accessibility.
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+	scroll-behavior: smooth;
+	/* The sticky nav would otherwise cover an anchored section's heading. */
+	scroll-padding-top: calc(var(--nav-h) + 16px);
+}
+
+body {
+	background: var(--surface);
+	color: var(--fg);
+	font-family: var(--font-body);
+	font-size: var(--t-base);
+	line-height: 1.62;
+	overflow-x: hidden;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/* Set while the preloader runs and while the cart drawer is open. Both need the
+   page frozen; `position:fixed` would lose the scroll position, so overflow it
+   is, with the offset restored by JS. */
+body.ys-locked {
+	overflow: hidden;
+}
+
+img,
+svg,
+video,
+canvas {
+	display: block;
+	max-width: 100%;
+}
+
+img {
+	height: auto;
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+button {
+	font: inherit;
+	color: inherit;
+	background: none;
+	border: 0;
+	cursor: pointer;
+}
+
+::selection {
+	background: var(--cyan);
+	color: #04060b;
+}
+
+.zone-light ::selection {
+	background: var(--accent);
+	color: #fff;
+}
+
+/* Firefox ignores the shorthand; the long form is what actually applies. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 3px;
+	border-radius: 4px;
+}
+
+/* ---- Scrollbar ---------------------------------------------------------- */
+::-webkit-scrollbar {
+	width: 10px;
+}
+
+::-webkit-scrollbar-track {
+	background: var(--void);
+}
+
+::-webkit-scrollbar-thumb {
+	background: #1e2434;
+	border: 2px solid var(--void);
+	border-radius: var(--radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: #2c344a;
+}
+
+/* ============================================================================
+   TYPOGRAPHY
+   ========================================================================== */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-family: var(--font-display);
+	font-weight: 800;
+	line-height: 0.98;
+	letter-spacing: var(--track-tight);
+	text-wrap: balance;
+}
+
+h1 {
+	font-size: var(--t-3xl);
+	text-transform: uppercase;
+}
+
+h2 {
+	font-size: var(--t-2xl);
+	text-transform: uppercase;
+}
+
+h3 {
+	font-size: var(--t-xl);
+	line-height: 1.1;
+}
+
+h4 {
+	font-size: var(--t-lg);
+	line-height: 1.2;
+}
+
+p {
+	text-wrap: pretty;
+}
+
+p + p {
+	margin-top: 1em;
+}
+
+strong,
+b {
+	font-weight: 700;
+}
+
+small {
+	font-size: var(--t-sm);
+}
+
+code,
+kbd,
+pre {
+	font-family: var(--font-mono);
+	font-size: 0.9em;
+}
+
+blockquote {
+	border-left: 2px solid var(--accent);
+	padding-left: 1.2em;
+	color: var(--fg-dim);
+	font-style: italic;
+}
+
+hr {
+	border: 0;
+	height: 1px;
+	background: var(--line);
+	margin: 2.5rem 0;
+}
+
+/* The gradient wordmark treatment. Once app.js splits a heading into
+   per-character spans it adds .is-painted and colours each one directly —
+   background-clip does not survive the per-character transforms GSAP applies,
+   so the technique has to be swapped, not layered. */
+.grad {
+	background: var(--grad);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+}
+
+.grad.is-painted {
+	background: none;
+	-webkit-background-clip: border-box;
+	background-clip: border-box;
+	color: inherit;
+}
+
+.eyebrow {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	font-weight: 500;
+	letter-spacing: var(--track-wide);
+	text-transform: uppercase;
+	color: var(--accent);
+}
+
+.eyebrow::before {
+	content: "";
+	width: 26px;
+	height: 1px;
+	background: currentColor;
+	opacity: 0.7;
+	flex: none;
+}
+
+.lede {
+	font-size: var(--t-lg);
+	color: var(--fg-dim);
+	max-width: var(--maxw-text);
+	line-height: 1.5;
+}
+
+.muted {
+	color: var(--fg-dim);
+}
+
+.mono {
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+}
+
+/* ============================================================================
+   LAYOUT PRIMITIVES
+   ========================================================================== */
+
+.wrap {
+	width: min(100% - (var(--gutter) * 2), var(--maxw));
+	margin-inline: auto;
+}
+
+.wrap--narrow {
+	--maxw: 880px;
+}
+
+.section {
+	padding-block: var(--section-y);
+	position: relative;
+	z-index: 1;
+}
+
+.section--tight {
+	padding-block: calc(var(--section-y) * 0.55);
+}
+
+/* A zone only paints its own background when it is a full-bleed block. */
+.zone-light.section,
+.zone-brand.section {
+	background: var(--surface);
+	color: var(--fg);
+}
+
+.sec-head {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-end;
+	gap: clamp(20px, 4vw, 40px);
+	flex-wrap: wrap;
+	margin-bottom: clamp(2rem, 5vw, 4rem);
+}
+
+.sec-head__text {
+	max-width: 40ch;
+}
+
+.sec-head h2 {
+	margin-top: 0.5rem;
+}
+
+.grid {
+	display: grid;
+	gap: clamp(14px, 2vw, 26px);
+}
+
+.grid--2 {
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+}
+
+.grid--3 {
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+}
+
+.grid--4 {
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+}
+
+.stack {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.row {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+}
+
+/* ============================================================================
+   FORMS
+   Shared by the newsletter, search, checkout and account screens so a field
+   looks the same everywhere WooCommerce chooses to render one.
+   ========================================================================== */
+
+input[type="text"],
+input[type="email"],
+input[type="url"],
+input[type="password"],
+input[type="search"],
+input[type="number"],
+input[type="tel"],
+input[type="date"],
+select,
+textarea {
+	width: 100%;
+	padding: 0.85em 1.05em;
+	background: var(--field-bg);
+	border: 1px solid var(--line-strong);
+	border-radius: var(--radius-sm);
+	color: var(--fg);
+	font: inherit;
+	font-size: var(--t-sm);
+	transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+	/* iOS zooms the viewport on focus for anything under 16px. */
+	font-size: max(16px, var(--t-sm));
+}
+
+textarea {
+	min-height: 8rem;
+	resize: vertical;
+}
+
+select {
+	appearance: none;
+	background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+		linear-gradient(135deg, currentColor 50%, transparent 50%);
+	background-position: calc(100% - 20px) center, calc(100% - 14px) center;
+	background-size: 6px 6px, 6px 6px;
+	background-repeat: no-repeat;
+	padding-right: 2.6em;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+	border-color: var(--accent);
+	background: color-mix(in srgb, var(--accent) 6%, var(--field-bg));
+	outline: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+	color: var(--fg-faint);
+}
+
+label {
+	display: block;
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--fg-dim);
+	margin-bottom: 0.5em;
+}
+
+/* ============================================================================
+   ACCESSIBILITY
+   ========================================================================== */
+
+.screen-reader-text {
+	border: 0;
+	clip-path: inset(50%);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	width: 1px;
+	white-space: nowrap;
+}
+
+.skip-link {
+	position: absolute;
+	top: -100px;
+	left: 16px;
+	z-index: 9999;
+	padding: 0.8em 1.4em;
+	background: var(--accent);
+	color: var(--accent-ink);
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+	transition: top var(--dur-fast) var(--ease);
+}
+
+.skip-link:focus {
+	top: 0;
+}
+
+/* WordPress editor alignment classes, needed by any post the store publishes. */
+.alignleft {
+	float: left;
+	margin: 0 1.5rem 1rem 0;
+}
+
+.alignright {
+	float: right;
+	margin: 0 0 1rem 1.5rem;
+}
+
+.aligncenter {
+	display: block;
+	margin-inline: auto;
+}
+
+.alignwide {
+	width: min(100%, 1100px);
+	margin-inline: auto;
+}
+
+.alignfull {
+	width: 100vw;
+	margin-left: 50%;
+	transform: translateX(-50%);
+	max-width: none;
+}
+
+.wp-caption-text,
+figcaption {
+	font-size: var(--t-xs);
+	color: var(--fg-faint);
+	margin-top: 0.6em;
+}
+
+.sticky,
+.gallery-caption,
+.bypostauthor {
+	/* Required by the WordPress theme review; no styling needed here. */
+	display: block;
+}

@@ -1,0 +1,41 @@
+/*
+Theme Name: YS Store
+Theme URI: https://github.com/yvssen-ai/HTML
+Author: Yassen Hassan
+Author URI: https://my-portfolio-puce-delta-i5xysrwxle.vercel.app/
+Description: A WooCommerce storefront carrying the motion language of the YS sites — the gradient dark shell and split-text reveals of My-Portfolio, the semantic colour zones and marquee of UNO, and the drawer-based ordering flow of Solis. Built for selling: AJAX cart drawer, filterable shop, and first-party sales analytics via the YS Commerce Insights plugin.
+Version: 1.0.0
+Requires at least: 6.4
+Tested up to: 6.8
+Requires PHP: 7.4
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: ys-store
+Tags: e-commerce, woocommerce, dark, one-column, custom-colors, custom-menu, full-width-template, translation-ready
+WC requires at least: 8.0
+WC tested up to: 9.8
+*/
+
+/*
+ * This file exists because WordPress requires it to recognise the theme, and
+ * because `get_stylesheet_uri()` is what child themes and plugins expect to
+ * override. The actual design system lives in assets/css/, split into five
+ * layers that are enqueued in cascade order by inc/assets.php:
+ *
+ *   tokens.css        the colour, type and motion variables — the only file
+ *                     that holds a raw hex value
+ *   base.css          reset, typography, layout primitives
+ *   components.css    buttons, cards, nav, marquee, footer
+ *   woocommerce.css   shop, product, cart, checkout, account
+ *   animations.css    the pre-animation states GSAP tweens away from
+ *
+ * Keeping them separate means a store that does not need the motion layer can
+ * dequeue `ys-animations` alone and still get a complete, working shop.
+ */
+
+/* A holding style so the page is never unstyled if the split files 404 —
+   the background matches --void so a failed load reads as intentional
+   rather than as a white flash. */
+html {
+	background: #05060a;
+}

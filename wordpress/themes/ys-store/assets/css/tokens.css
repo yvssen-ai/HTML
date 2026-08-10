@@ -1,0 +1,169 @@
+/* ============================================================================
+   YS STORE — DESIGN TOKENS
+   ----------------------------------------------------------------------------
+   Every colour, type step and easing curve on the storefront comes from this
+   file. Nothing below this layer holds a raw hex value.
+
+   The palette merges the three sites this store was drawn from:
+
+     · My-Portfolio  the void black shell and the conic gradient mark
+     · YS STORE      the cyan → violet → pink ramp used for every accent
+     · UNO           the semantic-token zone system: sections redefine
+                     --surface / --fg / --accent instead of hardcoding, so a
+                     light section is a class on a wrapper, not a rewrite
+     · Solis         the fluid clamp() type scale and the long settle easing
+
+   ZONES. The page defaults to the dark zone. Adding .zone-light or .zone-brand
+   to any section swaps the semantic tokens for that subtree — buttons, rules,
+   chips and muted text all follow automatically.
+   ========================================================================== */
+
+:root {
+	/* ---- BRAND CONSTANTS (never change per zone) ------------------------- */
+	--void: #05060a;
+	--deep: #0b0e1a;
+	--panel: #0e1119;
+	--panel-2: #141926;
+	--paper: #f1efe9; /* warm off-white, from Solis */
+	--cyan: #00e5ff;
+	--violet: #8b5cf6;
+	--pink: #ff3d81;
+	--lime: #c8ff2f;
+	--amber: #f5c97b;
+
+	--grad: linear-gradient(120deg, var(--cyan), var(--violet) 55%, var(--pink));
+	--grad-soft: linear-gradient(120deg, rgba(0, 229, 255, 0.16), rgba(139, 92, 246, 0.16) 55%, rgba(255, 61, 129, 0.16));
+
+	/* Status colours. Deliberately outside the brand ramp: a customer reading
+	   "out of stock" should not have to tell it apart from a highlight. */
+	--ok: #34d399;
+	--warn: #fbbf24;
+	--danger: #f87171;
+
+	/* ---- SEMANTIC TOKENS — DEFAULT ZONE: dark --------------------------- */
+	--surface: var(--void);
+	--surface-2: var(--panel);
+	--surface-3: var(--panel-2);
+	--fg: #f2f5ff;
+	--fg-dim: #98a0b8;
+	--fg-faint: #5e657b;
+	--line: rgba(255, 255, 255, 0.09);
+	--line-strong: rgba(255, 255, 255, 0.18);
+	--accent: var(--cyan);
+	--accent-ink: #04060b; /* text that sits on top of --accent */
+	--chip-bg: rgba(255, 255, 255, 0.05);
+	--chip-bd: rgba(255, 255, 255, 0.12);
+	--field-bg: rgba(255, 255, 255, 0.04);
+	--overlay: rgba(5, 6, 10, 0.72);
+
+	/* ---- TYPE ----------------------------------------------------------- */
+	--font-display: "Syne", "Trebuchet MS", system-ui, sans-serif;
+	--font-body: "Space Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+	--font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+	/* Fluid scale — clamp() so there is not a single type media query. */
+	--t-xs: clamp(0.68rem, 0.65rem + 0.15vw, 0.75rem);
+	--t-sm: clamp(0.8rem, 0.77rem + 0.16vw, 0.88rem);
+	--t-base: clamp(0.95rem, 0.92rem + 0.2vw, 1.05rem);
+	--t-lg: clamp(1.1rem, 1rem + 0.5vw, 1.35rem);
+	--t-xl: clamp(1.4rem, 1.15rem + 1.2vw, 2.1rem);
+	--t-2xl: clamp(1.9rem, 1.4rem + 2.4vw, 3.2rem);
+	--t-3xl: clamp(2.4rem, 1.5rem + 4.4vw, 4.6rem);
+	--t-4xl: clamp(3rem, 1.2rem + 9vw, 8.5rem);
+
+	--track-wide: 0.32em; /* eyebrows and mono labels */
+	--track-tight: -0.03em; /* display headings */
+
+	/* ---- SPACE ---------------------------------------------------------- */
+	--gutter: clamp(1.15rem, 4.5vw, 3rem);
+	--section-y: clamp(4.5rem, 11vw, 9rem);
+	--maxw: 1320px;
+	--maxw-text: 62ch;
+
+	/* ---- SURFACE -------------------------------------------------------- */
+	--radius-sm: 10px;
+	--radius: 16px;
+	--radius-lg: 26px;
+	--radius-pill: 999px;
+	--shadow: 0 24px 70px -30px rgba(0, 0, 0, 0.9);
+	--glow: 0 0 80px -18px rgba(0, 229, 255, 0.45);
+
+	/* ---- MOTION --------------------------------------------------------- */
+	--ease: cubic-bezier(0.19, 1, 0.22, 1); /* the house settle */
+	--ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+	--dur-fast: 0.22s;
+	--dur: 0.45s;
+	--dur-slow: 0.8s;
+
+	/* ---- CHROME --------------------------------------------------------- */
+	--nav-h: 74px;
+	--z-nav: 100;
+	--z-drawer: 200;
+	--z-cursor: 900;
+	--z-preloader: 1000;
+}
+
+/* ── ZONE: light ──────────────────────────────────────────────────────────
+   A cream break in the middle of a dark page, the way UNO's menu section
+   breaks its navy body. Cyan is unreadable on cream (1.6:1), so --accent
+   becomes violet, which clears 4.5:1 against --paper. */
+.zone-light {
+	--surface: var(--paper);
+	--surface-2: #ffffff;
+	--surface-3: #e9e6dd;
+	--fg: #10131c;
+	--fg-dim: rgba(16, 19, 28, 0.68);
+	--fg-faint: rgba(16, 19, 28, 0.45);
+	--line: rgba(16, 19, 28, 0.12);
+	--line-strong: rgba(16, 19, 28, 0.26);
+	--accent: #6d28d9;
+	--accent-ink: #ffffff;
+	--chip-bg: rgba(16, 19, 28, 0.05);
+	--chip-bd: rgba(16, 19, 28, 0.14);
+	--field-bg: rgba(255, 255, 255, 0.8);
+	--overlay: rgba(241, 239, 233, 0.8);
+
+	background: var(--surface);
+	color: var(--fg);
+}
+
+/* ── ZONE: brand ──────────────────────────────────────────────────────────
+   A saturated violet block for the newsletter and promo strips. */
+.zone-brand {
+	--surface: #1a0f3d;
+	--surface-2: #241355;
+	--surface-3: #2e1a66;
+	--fg: #f4f1ff;
+	--fg-dim: rgba(244, 241, 255, 0.7);
+	--fg-faint: rgba(244, 241, 255, 0.45);
+	--line: rgba(244, 241, 255, 0.14);
+	--line-strong: rgba(244, 241, 255, 0.3);
+	--accent: var(--lime);
+	--accent-ink: #14180a;
+	--chip-bg: rgba(255, 255, 255, 0.08);
+	--chip-bd: rgba(255, 255, 255, 0.18);
+	--field-bg: rgba(255, 255, 255, 0.07);
+
+	background: var(--surface);
+	color: var(--fg);
+}
+
+/* Anyone who has asked the OS for less motion gets the layout, not the show.
+   Declared here rather than in animations.css so it still applies when the
+   motion layer is dequeued. */
+@media (prefers-reduced-motion: reduce) {
+	:root {
+		--dur-fast: 0.01ms;
+		--dur: 0.01ms;
+		--dur-slow: 0.01ms;
+	}
+
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}

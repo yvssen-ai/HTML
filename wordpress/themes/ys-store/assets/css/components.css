@@ -1,0 +1,1034 @@
+/* ============================================================================
+   YS STORE — COMPONENTS
+   Chrome (preloader, cursor, progress, nav, footer) and the reusable pieces
+   (buttons, chips, cards, marquee, stats, accordion, notices).
+   ========================================================================== */
+
+/* ============================================================================
+   PRELOADER
+   The UNO deck shuffle, rebuilt around the YS monogram. It self-destructs after
+   its timeline finishes; if JS never runs, inc/assets.php never prints it, so
+   there is no way to end up with a permanently covered page.
+   ========================================================================== */
+
+.ys-preloader {
+	position: fixed;
+	inset: 0;
+	z-index: var(--z-preloader);
+	display: grid;
+	place-content: center;
+	justify-items: center;
+	gap: 26px;
+	background: var(--void);
+}
+
+.ys-preloader__mark {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(2.6rem, 12vw, 6rem);
+	letter-spacing: -0.04em;
+	display: flex;
+	overflow: hidden;
+}
+
+.ys-preloader__mark span {
+	display: inline-block;
+	will-change: transform;
+}
+
+.ys-preloader__bar {
+	width: min(240px, 54vw);
+	height: 2px;
+	background: var(--line-strong);
+	overflow: hidden;
+}
+
+.ys-preloader__bar i {
+	display: block;
+	height: 100%;
+	width: 0;
+	background: var(--grad);
+}
+
+.ys-preloader__count {
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	letter-spacing: var(--track-wide);
+	color: var(--fg-faint);
+}
+
+/* ============================================================================
+   CUSTOM CURSOR
+   Pointer-fine devices only. `[data-cursor="Add"]` swaps the ring for a label,
+   which is how the product cards announce their action without a hover
+   overlay covering the photograph.
+   ========================================================================== */
+
+.ys-cursor {
+	display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.ys-cursor {
+		display: block;
+		position: fixed;
+		top: 0;
+		left: 0;
+		z-index: var(--z-cursor);
+		pointer-events: none;
+		mix-blend-mode: difference;
+	}
+
+	.ys-cursor__dot,
+	.ys-cursor__ring {
+		position: absolute;
+		top: 0;
+		left: 0;
+		border-radius: 50%;
+		transform: translate(-50%, -50%);
+	}
+
+	.ys-cursor__dot {
+		width: 6px;
+		height: 6px;
+		background: #fff;
+	}
+
+	.ys-cursor__ring {
+		width: 38px;
+		height: 38px;
+		border: 1px solid rgba(255, 255, 255, 0.55);
+		display: grid;
+		place-items: center;
+	}
+
+	.ys-cursor__label {
+		font-family: var(--font-mono);
+		font-size: 8px;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: #fff;
+		opacity: 0;
+		white-space: nowrap;
+	}
+
+	body.ys-has-cursor,
+	body.ys-has-cursor a,
+	body.ys-has-cursor button {
+		cursor: none;
+	}
+}
+
+/* ============================================================================
+   SCROLL PROGRESS
+   ========================================================================== */
+
+.ys-progress {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 2px;
+	z-index: calc(var(--z-nav) + 1);
+	pointer-events: none;
+	background: transparent;
+}
+
+.ys-progress i {
+	display: block;
+	height: 100%;
+	width: 100%;
+	background: var(--grad);
+	transform: scaleX(0);
+	transform-origin: 0 50%;
+}
+
+/* ============================================================================
+   BUTTONS
+   ========================================================================== */
+
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.6em;
+	padding: 0.95em 1.7em;
+	border-radius: var(--radius-pill);
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	font-weight: 500;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	line-height: 1;
+	border: 1px solid transparent;
+	position: relative;
+	overflow: hidden;
+	isolation: isolate;
+	transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease),
+		background var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
+	will-change: transform;
+	text-align: center;
+}
+
+/* The wipe. A pseudo-element rather than a background-position trick so the
+   label stays readable while the fill travels underneath it. */
+.btn::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	background: var(--grad);
+	transform: translateY(101%);
+	transition: transform var(--dur) var(--ease);
+}
+
+.btn:hover::before,
+.btn:focus-visible::before {
+	transform: translateY(0);
+}
+
+.btn--primary {
+	background: var(--grad);
+	color: #04060b;
+	font-weight: 700;
+}
+
+.btn--primary::before {
+	background: #fff;
+}
+
+.btn--ghost {
+	border-color: var(--line-strong);
+	color: var(--fg);
+}
+
+.btn--ghost:hover,
+.btn--ghost:focus-visible {
+	color: #04060b;
+	border-color: transparent;
+}
+
+.btn--solid {
+	background: var(--fg);
+	color: var(--surface);
+}
+
+.btn--sm {
+	padding: 0.7em 1.2em;
+	font-size: 10px;
+}
+
+.btn--lg {
+	padding: 1.15em 2.3em;
+	font-size: var(--t-sm);
+}
+
+.btn--block {
+	display: flex;
+	width: 100%;
+}
+
+.btn[disabled],
+.btn.is-busy {
+	opacity: 0.55;
+	pointer-events: none;
+}
+
+/* A three-dot pulse while an AJAX request is in flight — the add-to-cart
+   button must never look inert between tap and drawer. */
+.btn.is-busy::after {
+	content: "";
+	width: 1em;
+	height: 1em;
+	margin-left: 0.4em;
+	border: 2px solid currentColor;
+	border-right-color: transparent;
+	border-radius: 50%;
+	animation: ys-spin 0.7s linear infinite;
+}
+
+@keyframes ys-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* ---- Chips / tags ------------------------------------------------------- */
+
+.chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45em;
+	padding: 0.45em 0.9em;
+	border-radius: var(--radius-pill);
+	background: var(--chip-bg);
+	border: 1px solid var(--chip-bd);
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--fg-dim);
+	transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+
+a.chip:hover,
+.chip.is-active {
+	color: var(--accent);
+	border-color: var(--accent);
+}
+
+.chip--accent {
+	background: var(--accent);
+	border-color: var(--accent);
+	color: var(--accent-ink);
+}
+
+.chip--sale {
+	background: var(--pink);
+	border-color: var(--pink);
+	color: #fff;
+}
+
+.chip--new {
+	background: var(--lime);
+	border-color: var(--lime);
+	color: #14180a;
+}
+
+.chip--out {
+	background: rgba(255, 255, 255, 0.06);
+	border-color: var(--line-strong);
+	color: var(--fg-faint);
+}
+
+/* ============================================================================
+   NAVIGATION
+   ========================================================================== */
+
+.ys-nav {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: var(--z-nav);
+	height: var(--nav-h);
+	display: flex;
+	align-items: center;
+	transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease),
+		backdrop-filter var(--dur) var(--ease);
+	border-bottom: 1px solid transparent;
+}
+
+/* Set by app.js past the first viewport. Transparent over the hero, solid the
+   moment the hero's artwork stops being behind it. */
+.ys-nav.is-stuck {
+	background: rgba(5, 6, 10, 0.72);
+	backdrop-filter: blur(16px) saturate(140%);
+	border-bottom-color: var(--line);
+}
+
+.ys-nav__inner {
+	width: min(100% - (var(--gutter) * 2), var(--maxw));
+	margin-inline: auto;
+	display: flex;
+	align-items: center;
+	gap: clamp(14px, 3vw, 34px);
+}
+
+.ys-brand {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: 1.15rem;
+	letter-spacing: -0.02em;
+	text-transform: uppercase;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex: none;
+}
+
+.ys-brand img {
+	max-height: 38px;
+	width: auto;
+}
+
+.ys-nav__menu {
+	display: flex;
+	align-items: center;
+	gap: clamp(12px, 2vw, 28px);
+	list-style: none;
+	margin-left: auto;
+}
+
+.ys-nav__menu a {
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--fg-dim);
+	position: relative;
+	padding-block: 4px;
+	transition: color var(--dur-fast) var(--ease);
+}
+
+.ys-nav__menu a::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	height: 1px;
+	width: 100%;
+	background: var(--accent);
+	transform: scaleX(0);
+	transform-origin: 100% 50%;
+	transition: transform var(--dur) var(--ease);
+}
+
+.ys-nav__menu a:hover,
+.ys-nav__menu .current-menu-item > a {
+	color: var(--fg);
+}
+
+.ys-nav__menu a:hover::after,
+.ys-nav__menu .current-menu-item > a::after {
+	transform: scaleX(1);
+	transform-origin: 0 50%;
+}
+
+/* Sub-menus. Kept to one level: a storefront nav that needs two is a nav that
+   needs a mega-menu instead. */
+.ys-nav__menu .sub-menu {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	min-width: 200px;
+	list-style: none;
+	padding: 10px;
+	margin-top: 12px;
+	background: var(--panel);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow);
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(-8px);
+	transition: all var(--dur) var(--ease);
+}
+
+.ys-nav__menu li {
+	position: relative;
+}
+
+.ys-nav__menu li:hover > .sub-menu,
+.ys-nav__menu li:focus-within > .sub-menu {
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0);
+}
+
+.ys-nav__menu .sub-menu a {
+	display: block;
+	padding: 8px 12px;
+	border-radius: var(--radius-sm);
+}
+
+.ys-nav__actions {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex: none;
+}
+
+.ys-icon-btn {
+	width: 42px;
+	height: 42px;
+	display: grid;
+	place-items: center;
+	border-radius: 50%;
+	border: 1px solid var(--line);
+	color: var(--fg);
+	position: relative;
+	transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+
+.ys-icon-btn:hover {
+	border-color: var(--accent);
+	color: var(--accent);
+}
+
+.ys-icon-btn svg {
+	width: 18px;
+	height: 18px;
+	stroke: currentColor;
+	fill: none;
+	stroke-width: 1.6;
+}
+
+/* The cart count. Hidden at zero rather than showing "0", which reads as a
+   broken badge. */
+.ys-cart-count {
+	position: absolute;
+	top: -4px;
+	right: -4px;
+	min-width: 20px;
+	height: 20px;
+	padding: 0 5px;
+	border-radius: var(--radius-pill);
+	background: var(--pink);
+	color: #fff;
+	font-family: var(--font-mono);
+	font-size: 10px;
+	font-weight: 500;
+	display: grid;
+	place-items: center;
+	line-height: 1;
+}
+
+.ys-cart-count[data-count="0"] {
+	display: none;
+}
+
+/* ---- Search panel ------------------------------------------------------- */
+
+.ys-search-panel {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	right: 0;
+	padding: 1.1rem 0;
+	background: rgba(5, 6, 10, 0.94);
+	backdrop-filter: blur(16px);
+	border-bottom: 1px solid var(--line);
+}
+
+.ys-search-panel[hidden] {
+	display: none;
+}
+
+/* ---- Burger + mobile drawer -------------------------------------------- */
+
+.ys-burger {
+	display: none;
+	width: 42px;
+	height: 42px;
+	place-items: center;
+	border-radius: 50%;
+	border: 1px solid var(--line);
+}
+
+.ys-burger i {
+	display: block;
+	width: 17px;
+	height: 1.5px;
+	background: var(--fg);
+	transition: transform var(--dur) var(--ease), opacity var(--dur-fast) var(--ease);
+}
+
+.ys-burger i + i {
+	margin-top: 5px;
+}
+
+.ys-burger[aria-expanded="true"] i:first-child {
+	transform: translateY(3.25px) rotate(45deg);
+}
+
+.ys-burger[aria-expanded="true"] i:last-child {
+	transform: translateY(-3.25px) rotate(-45deg);
+}
+
+.ys-mobile-menu {
+	position: fixed;
+	inset: var(--nav-h) 0 0;
+	z-index: calc(var(--z-nav) - 1);
+	background: var(--void);
+	padding: clamp(24px, 8vw, 60px) var(--gutter);
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	overflow-y: auto;
+	visibility: hidden;
+	opacity: 0;
+	transition: opacity var(--dur) var(--ease), visibility var(--dur);
+}
+
+.ys-mobile-menu.is-open {
+	visibility: visible;
+	opacity: 1;
+}
+
+.ys-mobile-menu ul {
+	list-style: none;
+}
+
+.ys-mobile-menu a {
+	display: block;
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: clamp(1.6rem, 8vw, 2.6rem);
+	text-transform: uppercase;
+	letter-spacing: -0.02em;
+	padding: 0.28em 0;
+	border-bottom: 1px solid var(--line);
+}
+
+.ys-mobile-menu .sub-menu a {
+	font-size: var(--t-base);
+	font-family: var(--font-body);
+	text-transform: none;
+	color: var(--fg-dim);
+	padding-left: 1rem;
+}
+
+@media (max-width: 900px) {
+	.ys-nav__menu {
+		display: none;
+	}
+
+	.ys-burger {
+		display: grid;
+	}
+}
+
+/* ============================================================================
+   HERO
+   ========================================================================== */
+
+.ys-hero {
+	position: relative;
+	min-height: 100svh;
+	display: grid;
+	align-items: center;
+	padding: calc(var(--nav-h) + 60px) 0 80px;
+	overflow: hidden;
+}
+
+/* The particle field from My-Portfolio. Behind everything, non-interactive,
+   and skipped entirely on reduced motion. */
+.ys-hero__field {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	pointer-events: none;
+	opacity: 0.55;
+}
+
+.ys-hero__glow {
+	position: absolute;
+	z-index: 0;
+	width: min(900px, 120vw);
+	aspect-ratio: 1;
+	left: 50%;
+	top: 40%;
+	transform: translate(-50%, -50%);
+	background: radial-gradient(circle, rgba(139, 92, 246, 0.22), transparent 62%);
+	pointer-events: none;
+	filter: blur(30px);
+}
+
+.ys-hero__inner {
+	position: relative;
+	z-index: 2;
+}
+
+.ys-hero h1 {
+	font-size: var(--t-4xl);
+	margin: 1rem 0 1.5rem;
+}
+
+.ys-hero .lede {
+	margin-bottom: 2.4rem;
+}
+
+.ys-hero__cta {
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+/* Grain. One SVG turbulence tile, the same one My-Portfolio uses. */
+.ys-grain {
+	position: fixed;
+	inset: 0;
+	z-index: 2;
+	pointer-events: none;
+	opacity: 0.04;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ============================================================================
+   MARQUEE — the UNO ticker
+   Duplicated track, translated -50%: the copy reaches the origin exactly as
+   the original leaves, so there is no seam to time.
+   ========================================================================== */
+
+.ys-marquee {
+	overflow: hidden;
+	border-block: 1px solid var(--line);
+	padding-block: 0.9rem;
+	background: var(--surface-2);
+	user-select: none;
+}
+
+.ys-marquee__track {
+	display: flex;
+	width: max-content;
+	gap: 2.4rem;
+	will-change: transform;
+}
+
+.ys-marquee__track span {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: clamp(1rem, 2.4vw, 1.6rem);
+	text-transform: uppercase;
+	letter-spacing: -0.01em;
+	white-space: nowrap;
+	display: flex;
+	align-items: center;
+	gap: 2.4rem;
+	color: var(--fg-dim);
+}
+
+.ys-marquee__track span::after {
+	content: "";
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: var(--accent);
+	flex: none;
+}
+
+/* ============================================================================
+   CARDS — categories, features, editorial
+   ========================================================================== */
+
+.card {
+	position: relative;
+	padding: clamp(20px, 3vw, 34px);
+	border: 1px solid var(--line);
+	border-radius: var(--radius-lg);
+	background: var(--surface-2);
+	overflow: hidden;
+	isolation: isolate;
+	transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+/* The pointer-follow highlight. --mx/--my are written by app.js on mousemove;
+   with no JS the gradient sits at 50% 50% and simply never moves. */
+.card::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	background: radial-gradient(
+		320px circle at var(--mx, 50%) var(--my, 50%),
+		color-mix(in srgb, var(--accent) 14%, transparent),
+		transparent 65%
+	);
+	opacity: 0;
+	transition: opacity var(--dur) var(--ease);
+}
+
+.card:hover {
+	border-color: var(--line-strong);
+}
+
+.card:hover::before {
+	opacity: 1;
+}
+
+.card__index {
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	color: var(--fg-faint);
+	letter-spacing: 0.2em;
+}
+
+.card h3 {
+	margin: 0.8rem 0 0.5rem;
+}
+
+.card p {
+	color: var(--fg-dim);
+	font-size: var(--t-sm);
+}
+
+.card__media {
+	aspect-ratio: 4 / 3;
+	border-radius: var(--radius);
+	overflow: hidden;
+	margin-bottom: 1.1rem;
+	background: var(--surface-3);
+}
+
+.card__media img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform var(--dur-slow) var(--ease);
+}
+
+.card:hover .card__media img {
+	transform: scale(1.06);
+}
+
+/* Full-card link overlay: the whole tile is the hit area, but only the heading
+   is in the tab order and only its text is announced. */
+.card__link {
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+}
+
+/* ---- Stats strip -------------------------------------------------------- */
+
+.ys-stats {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+	gap: 1px;
+	background: var(--line);
+	border-block: 1px solid var(--line);
+}
+
+.ys-stat {
+	background: var(--surface);
+	padding: clamp(24px, 4vw, 44px) clamp(16px, 3vw, 30px);
+	text-align: center;
+}
+
+.ys-stat__num {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: var(--t-2xl);
+	line-height: 1;
+	background: var(--grad);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+}
+
+.ys-stat__label {
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--fg-faint);
+	margin-top: 0.7rem;
+}
+
+/* ---- Reviews ------------------------------------------------------------ */
+
+.ys-review {
+	padding: clamp(20px, 3vw, 32px);
+	border: 1px solid var(--line);
+	border-radius: var(--radius-lg);
+	background: var(--surface-2);
+}
+
+.ys-review__stars {
+	color: var(--amber);
+	letter-spacing: 0.2em;
+	font-size: var(--t-sm);
+}
+
+.ys-review blockquote {
+	border: 0;
+	padding: 0;
+	margin: 1rem 0;
+	font-style: normal;
+	color: var(--fg);
+	font-size: var(--t-lg);
+	line-height: 1.4;
+}
+
+.ys-review cite {
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--fg-faint);
+	font-style: normal;
+}
+
+/* ============================================================================
+   NOTICES — shared by WooCommerce messages and the AJAX cart
+   ========================================================================== */
+
+.ys-notice {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.8rem;
+	padding: 1rem 1.2rem;
+	border-radius: var(--radius);
+	border: 1px solid var(--line-strong);
+	background: var(--surface-2);
+	font-size: var(--t-sm);
+	margin-bottom: 1.2rem;
+}
+
+.ys-notice--ok {
+	border-color: color-mix(in srgb, var(--ok) 50%, transparent);
+	background: color-mix(in srgb, var(--ok) 10%, var(--surface-2));
+}
+
+.ys-notice--error {
+	border-color: color-mix(in srgb, var(--danger) 50%, transparent);
+	background: color-mix(in srgb, var(--danger) 10%, var(--surface-2));
+}
+
+/* A transient toast for AJAX add-to-cart when the drawer is suppressed. */
+.ys-toast {
+	position: fixed;
+	left: 50%;
+	bottom: 26px;
+	transform: translateX(-50%) translateY(20px);
+	z-index: calc(var(--z-drawer) + 1);
+	padding: 0.9em 1.4em;
+	border-radius: var(--radius-pill);
+	background: var(--panel);
+	border: 1px solid var(--line-strong);
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.ys-toast.is-visible {
+	opacity: 1;
+	transform: translateX(-50%) translateY(0);
+}
+
+/* ============================================================================
+   FOOTER
+   ========================================================================== */
+
+.ys-footer {
+	border-top: 1px solid var(--line);
+	padding-block: clamp(3rem, 7vw, 5.5rem) 2rem;
+	background: var(--deep);
+	position: relative;
+	z-index: 1;
+}
+
+.ys-footer__grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+	gap: clamp(24px, 4vw, 50px);
+}
+
+.ys-footer__col h4 {
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	font-weight: 500;
+	letter-spacing: var(--track-wide);
+	text-transform: uppercase;
+	color: var(--fg-faint);
+	margin-bottom: 1.1rem;
+}
+
+.ys-footer__col ul {
+	list-style: none;
+	display: grid;
+	gap: 0.6rem;
+}
+
+.ys-footer__col a {
+	color: var(--fg-dim);
+	font-size: var(--t-sm);
+	transition: color var(--dur-fast) var(--ease);
+}
+
+.ys-footer__col a:hover {
+	color: var(--accent);
+}
+
+.ys-footer__wordmark {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(3rem, 17vw, 13rem);
+	line-height: 0.8;
+	letter-spacing: -0.04em;
+	text-transform: uppercase;
+	background: var(--grad);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+	opacity: 0.22;
+	margin-top: clamp(2.5rem, 6vw, 4.5rem);
+	user-select: none;
+	pointer-events: none;
+}
+
+.ys-footer__legal {
+	display: flex;
+	justify-content: space-between;
+	gap: 1rem;
+	flex-wrap: wrap;
+	padding-top: 1.6rem;
+	margin-top: 1.6rem;
+	border-top: 1px solid var(--line);
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	letter-spacing: 0.1em;
+	color: var(--fg-faint);
+}
+
+/* ---- Payment badges: reassurance directly under the checkout button ------ */
+
+.ys-payments {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.ys-payments span {
+	padding: 0.4em 0.7em;
+	border: 1px solid var(--line);
+	border-radius: 6px;
+	font-family: var(--font-mono);
+	font-size: 9px;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--fg-faint);
+}
+
+/* ============================================================================
+   PAGINATION
+   ========================================================================== */
+
+.ys-pagination {
+	display: flex;
+	justify-content: center;
+	gap: 8px;
+	margin-top: clamp(2.5rem, 6vw, 4rem);
+	flex-wrap: wrap;
+}
+
+.ys-pagination .page-numbers {
+	min-width: 42px;
+	height: 42px;
+	padding: 0 12px;
+	display: grid;
+	place-items: center;
+	border: 1px solid var(--line);
+	border-radius: var(--radius-sm);
+	font-family: var(--font-mono);
+	font-size: var(--t-xs);
+	color: var(--fg-dim);
+	transition: all var(--dur-fast) var(--ease);
+}
+
+.ys-pagination .page-numbers:hover {
+	border-color: var(--accent);
+	color: var(--accent);
+}
+
+.ys-pagination .page-numbers.current {
+	background: var(--fg);
+	border-color: var(--fg);
+	color: var(--surface);
+}
