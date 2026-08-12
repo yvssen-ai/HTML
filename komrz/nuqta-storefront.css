@@ -262,9 +262,9 @@ body[class*="woocommerce"] .wc-block-grid__product:hover {
 }
 
 /* ---- Product image -------------------------------------------------------
-   Square, generous, and on the card's own white rather than the page ground,
-   so a product shot with a white background dissolves into the card instead
-   of sitting in a visible box. */
+   Square, generous, and on the white of the card itself rather than the page
+   ground, so a product shot with a white background dissolves into the card
+   instead of sitting in a visible box. */
 body[class*="woocommerce"] ul.products li.product img,
 body[class*="woocommerce"] .wc-block-grid__product-image img,
 body[class*="woocommerce"] .wp-block-woocommerce-product-template .wc-block-components-product-image img {
@@ -377,8 +377,9 @@ body[class*="woocommerce"] ul.products li.product .added_to_cart {
   }
 }
 
-/* Woo's spinner and tick states, restyled rather than removed — they are the
-   only feedback a customer gets between tapping and the cart updating. */
+/* The spinner and tick states WooCommerce adds, restyled rather than removed —
+   they are the only feedback a customer gets between tapping and the cart
+   updating. */
 body[class*="woocommerce"] .add_to_cart_button.loading {
   opacity: .55;
   pointer-events: none;
@@ -507,7 +508,7 @@ body[class*="woocommerce"] form.cart {
   margin-bottom: 1.6rem;
 }
 
-/* A variable product's form is a stack, not a row — the attribute table, then
+/* A variable product form is a stack, not a row — the attribute table, then
    the price, then the buy row. Flex would put those three side by side. */
 body[class*="woocommerce"] form.variations_form.cart {
   display: block;
@@ -595,11 +596,11 @@ body[class*="woocommerce"] .shop_attributes th {
 
 /* ==========================================================================
    §5  MINI-CART DRAWER
-   Styling only — the drawer itself is WooCommerce's own Mini-Cart block.
+   Styling only — the drawer itself is the Mini-Cart block WooCommerce ships.
    Add it once in Site Editor → Patterns → my-header, and you get a real cart
    drawer with none of the risk of a hand-written one: it reads the live cart,
-   it updates on Woo's own events, and it cannot fall out of step with the
-   totals a customer is about to pay.
+   it updates on the events WooCommerce itself fires, and it cannot fall out
+   of step with the totals a customer is about to pay.
    ========================================================================== */
 
 body[class*="woocommerce"] .wc-block-mini-cart__badge {
@@ -720,7 +721,7 @@ body[class*="woocommerce"] #payment div.payment_box {
 }
 
 body[class*="woocommerce"] #payment div.payment_box::before {
-  content: none;   /* removes Woo's little grey speech-bubble arrow */
+  content: none;   /* removes the little grey speech-bubble arrow WooCommerce adds */
 }
 
 body[class*="woocommerce"] #place_order,
@@ -773,9 +774,9 @@ body[class*="woocommerce"] .woocommerce-MyAccount-navigation li a:hover {
   border-bottom-color: var(--nq-point);
 }
 
-/* Notices. Woo's defaults are a grey bar with a coloured left edge; these read
-   as deliberate and, more importantly, tell the three states apart by colour
-   AND by the dot, so they still separate in greyscale. */
+/* Notices. The WooCommerce defaults are a grey bar with a coloured left edge;
+   these read as deliberate and, more importantly, tell the three states apart
+   by colour AND by the dot, so they still separate in greyscale. */
 body[class*="woocommerce"] .woocommerce-message,
 body[class*="woocommerce"] .woocommerce-info,
 body[class*="woocommerce"] .woocommerce-error {
